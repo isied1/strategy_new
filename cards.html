@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>مبادرات الاستراتيجية الصناعية 2040</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <script src="supabase.js"></script>
+  
+  <style>
+    :root{ --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --brand:#176b87; --brand2:#0b4f6c; --soft:#f0f7f9; --shadow:0 10px 30px rgba(15, 23, 42, .04); --radius:16px; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family: Tahoma, Arial, sans-serif; background: var(--bg); color:var(--ink); line-height:1.7;}
+    .shell{max-width:1440px;margin:auto;padding:16px}
+    
+    .header-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 18px 32px; box-shadow: var(--shadow); border-bottom: 3px solid var(--brand); width: 100%; margin-bottom:0; }
+    .header-bar h1 { margin: 0; color: var(--brand2); font-size: 22px; font-weight: 800; }
+    .header-user { display: flex; align-items: center; gap: 16px; font-weight: bold; }
+    
+    .btn-primary { background: var(--brand); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s; }
+    .btn-primary:hover { background: var(--brand2); }
+    .btn-logout { background: #ef4444; color: #fff; border: none; border-radius: 8px; padding: 6px 16px; cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s; }
+    .btn-logout:hover { background: #dc2626; }
+    .btn-review{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:bold; transition: 0.2s;}
+    .btn-review:hover{background:var(--brand2);}
+
+    .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--brand2); color: #fff; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 14.5px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 10005; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+    .toast-popup.show { opacity: 1; top: 40px; }
+    .toast-popup.success { background: #16a34a; }
+    .toast-popup.error { background: #ef4444; }
+
+    .panel{ background: #ffffff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .filters{display:grid;grid-template-columns: 1.2fr 1fr 1fr 1fr auto;gap:12px;align-items:start}
+    input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-family:inherit;color:var(--ink);outline:none;}
+    input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(23,107,135,.1)}
+    
+    .search-select{position:relative;width:100%}
+    .search-select-input{padding-left:42px; padding-right:12px; appearance:none;}
+    .search-select:after{content:"⌄";position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-weight:bold;font-size:18px;}
+    .entity-options{position:absolute;z-index:50;inset:auto 0 auto 0;top:calc(100% + 4px);max-height:250px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(15,23,42,.1);padding:4px}
+    .entity-option{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+    .entity-option:hover,.entity-option.active{background:var(--soft);color:var(--brand2);font-weight:bold}
+
+    .dropdown { position: relative; display: inline-block; height: 100%; }
+    .btn-menu { display: inline-flex; align-items: center; justify-content: center; height: 100%; padding: 0 16px; background: var(--brand2); color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 20px; transition: 0.2s; }
+    .dropdown-content { display: none; position: absolute; left: 0; top: calc(100% + 8px); background-color: #fff; min-width: 240px; box-shadow: var(--shadow); border: 1px solid var(--line); border-radius: 12px; z-index: 1000; overflow: hidden; }
+    .dropdown-content.show { display: block; }
+    .dropdown-content button { width: 100%; text-align: right; padding: 14px 16px; border: none; background: transparent; font-family: inherit; font-size: 13.5px; cursor: pointer; color: var(--ink); border-bottom: 1px solid var(--line); }
+    .dropdown-content button:hover { background-color: var(--soft); color: var(--brand2); font-weight: bold; }
+    
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+    .stats .stat{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+    .stats .stat b{display:block;font-size:22px;color:var(--brand2);}
+    .stats .stat span{font-size:12px;color:var(--muted)}
+    
+    .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
+    
+    .card-head{padding:16px;background:linear-gradient(180deg,#fff,var(--soft));border-bottom:1px solid var(--line)}
+    .topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .badge{background:var(--brand2);color:#fff;border-radius:20px;padding:4px 12px;font-weight:bold;font-size:12px;direction:ltr;display:inline-block;}
+    .card h2{margin:0;font-size:17px;line-height:1.5;color:#0f172a}
+    
+    .meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+    .mini{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px;min-height:54px}
+    .mini span{display:block;color:var(--muted);font-size:11px;line-height:1.2;margin-bottom:2px}
+    .mini b{font-size:12px;word-break:break-word}
+    .progress{height:6px;background:#e2e8f0;border-radius:10px;margin-top:4px;overflow:hidden;}
+    .bar{height:100%;background:var(--brand);border-radius:10px;}
+    
+    .card-body{padding:16px;flex-grow:1; display:flex; flex-direction:column; gap:14px;}
+    .section-title{font-weight:bold;color:var(--brand2);margin-bottom:6px;font-size:13.5px;display:flex;gap:6px;align-items:center}
+    .section-title:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand)}
+    
+    .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .list{margin:0;padding:0 16px 0 0}.list li{margin:3px 0;color:#334155;font-size:12.5px}
+    
+    .card-control { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; color: inherit; font-size: inherit; font-weight: inherit; outline: none; padding: 4px 6px; margin: 0; resize: none; overflow: hidden; line-height: 1.6; }
+    .empty{color:var(--muted);background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;text-align:center;font-size:12px}
+    .hidden{display:none!important}
+
+    /* الشات بوت العائم */
+    .chat-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; border: none; }
+    .chat-window { position: fixed; bottom: 100px; left: 30px; width: 360px; max-width: 90vw; height: 500px; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s ease; border: 1px solid var(--line); overflow: hidden; }
+    .chat-window.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .chat-header { background: var(--brand2); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+    .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
+    .chat-msg.user { align-self: flex-start; background: var(--brand); color: #fff; border-bottom-right-radius: 2px; }
+    .chat-msg.ai { align-self: flex-end; background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 2px; }
+    .chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid var(--line); gap: 8px; }
+    .chat-input-area input { flex: 1; border: 1px solid var(--line); border-radius: 20px; padding: 10px 16px; outline: none; font-family: inherit; }
+    .chat-input-area button { background: var(--brand); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+
+    /* نافذة الجهات المنفذة */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content { background: #fff; border-radius: var(--radius); width: 850px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+    .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .form-grid label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px; color: var(--brand2); }
+  </style>
+</head>
+<body>
+  <div id="toastPopup" class="toast-popup"></div>
+
+  <div class="modal-overlay" id="entityModal">
+    <div class="modal-content">
+      <h2 style="color:var(--brand2); margin-top:0;">إدارة الجهات المنفذة</h2>
+      <div class="form-grid">
+        <input type="hidden" id="ent_rowIndex" value="" />
+        <div style="display:flex; flex-direction:column;"><label>اسم الجهة</label><input type="text" id="ent_name" placeholder="الاسم الكامل للجهة"></div>
+        <div style="display:flex; flex-direction:column;"><label>نقطة التواصل</label><input type="text" id="ent_contact" placeholder="اسم المسؤول"></div>
+        <div style="display:flex; flex-direction:column;"><label>رقم الهاتف</label><input type="text" id="ent_phone" placeholder="968+"></div>
+        <div style="display:flex; flex-direction:column;"><label>البريد الإلكتروني</label><input type="text" id="ent_email" placeholder="email@gov.om"></div>
+      </div>
+      <div style="margin-bottom: 24px; display:flex; gap:10px;">
+        <button class="btn-primary" onclick="saveEntity()">حفظ بيانات الجهة 💾</button>
+        <button class="btn-review" style="padding:10px 20px; background:#ef4444;" onclick="resetEntityForm()">تفريغ الحقول</button>
+      </div>
+      <table style="width: 100%; border: 1px solid var(--line); border-collapse: separate; border-spacing: 0; font-size:12px;">
+        <thead><tr>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">اسم الجهة</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">نقطة التواصل</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">رقم الهاتف</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">الإيميل</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:center; width:70px;">الإجراء</th>
+        </tr></thead>
+        <tbody id="entityTableBody"></tbody>
+      </table>
+      <div style="text-align:left; margin-top:20px; padding-top:15px; border-top:1px solid var(--line);">
+        <button class="btn-review" style="padding:8px 24px; background:#ef4444;" onclick="closeEntityModal()">إغلاق النافذة</button>
+      </div>
+    </div>
+  </div>
+
+  <header id="appHeader" class="header-bar hidden">
+    <h1>الاستراتيجية الصناعية 2040</h1>
+    <div class="header-user">
+      <div class="dropdown" style="position: relative; display: inline-block;">
+        <span id="displayUserName" onclick="toggleUserDropdown()" style="padding: 4px 8px; border-radius: 8px;"></span>
+        <div id="userDropdownMenu" class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
+          <button id="btnAdminUsers" class="hidden" onclick="goToAdminPage()" style="font-weight: bold; color: var(--brand2);">إدارة المستخدمين</button>
+          <button id="btnAdminEntities" class="hidden" onclick="openManageEntitiesModal()" style="font-weight: bold; color: var(--brand2);">إدارة الجهات المنفذة</button>
+        </div>
+      </div>
+      <span id="displayUserRole" style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:10px; color:#475569;"></span>
+      <button class="btn-logout" onclick="logoutUser()">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main class="shell hidden" id="appContent" style="padding-top:24px;">
+    <section class="panel">
+      <div class="filters">
+        <input id="searchInput" placeholder="بحث سريع..." />
+        <div class="search-select" id="entitySelectBox">
+          <input id="entitySearchBox" class="search-select-input" placeholder="كل الجهات المنفذة" autocomplete="off" />
+          <div id="entityOptions" class="entity-options hidden"></div>
+        </div>
+        <div class="search-select">
+          <select id="programSelect" class="search-select-input">
+            <option value="">برنامج الاستراتيجية الصناعية 2040 (الكل)</option>
+            <option value="ابتكار صناعات جديدة وذات تكنولوجيا متقدمة">ابتكار صناعات جديدة وذات تكنولوجيا متقدمة</option>
+            <option value="ريادة الاعمال والابتكار">ريادة الاعمال والابتكار</option>
+            <option value="التطوير والتحديث">التطوير والتحديث</option>
+            <option value="الحوكمة وإدارة التنمية الصناعية">الحوكمة وإدارة التنمية الصناعية</option>
+          </select>
+        </div>
+        <div class="search-select">
+          <select id="followUpSelect" class="search-select-input">
+            <option value="">كل المسؤولين عن المتابعة</option>
+          </select>
+        </div>
+        
+        <div style="display: flex; gap: 8px; height: 100%;">
+          <button onclick="window.location.href='dashboard.html'" class="btn-menu" title="الصفحة الرئيسية (لوحة المؤشرات)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </button>
+          <button onclick="loadAllDataFromServer()" class="btn-menu" title="تحديث البيانات">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
+          <div class="dropdown">
+            <button id="menuBtn" class="btn-menu" onclick="toggleMenu()">⋮</button>
+            <div id="dropdownMenu" class="dropdown-content">
+              <button onclick="exportToExcel(); toggleMenu();">تحميل البيانات (Excel) 📊</button>
+              <button onclick="exportToPowerPoint(); toggleMenu();">تحميل البيانات (PowerPoint) 📽️</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="statInitiatives">0</b><span>المبادرات المعروضة</span></div>
+        <div class="stat"><b id="statEntities">0</b><span>عدد الجهات المنفذة</span></div>
+        <div class="stat"><b id="statAvg">0%</b><span>متوسط نسبة الإنجاز</span></div>
+      </div>
+    </section>
+
+    <section id="cards" class="cards"></section>
+  </main>
+
+  <button class="chat-fab" onclick="toggleChat()" title="تحدث مع المستشار الذكي">🤖</button>
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <div style="display:flex; align-items:center; gap:8px;"><span>🤖</span> مساعد الاستراتيجية</div>
+      <button style="background:transparent; border:none; color:#fff; cursor:pointer; font-size:16px;" onclick="toggleChat()">✖</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg ai">أهلاً بك! 👋 أنا المساعد الذكي للاستراتيجية. يمكنك سؤالي عن المبادرات المعروضة هنا.</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendChatMessage()" />
+      <button id="chatSendBtn" onclick="sendChatMessage()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg);"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
+    try {
+      if (typeof supabase === 'undefined') throw new Error('فشل تحميل مكتبة Supabase من الشبكة (CDN). تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة.');
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (initErr) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:center;padding:20px;"><div><h2 style="color:#dc2626;">⚠️ تعذر تحميل التطبيق</h2><p style="color:#64748b;max-width:420px;">' + initErr.message + '</p><button onclick="location.reload()" style="margin-top:12px;padding:10px 24px;background:#176b87;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">إعادة المحاولة</button></div></div>';
+      throw initErr;
+    }
+
+    let entitiesList = []; let initiatives = []; let selectedEntity = ''; let currentUser = null; let chatHistoryLog = [];
+
+    const els = {
+      cards: document.getElementById('cards'), searchInput: document.getElementById('searchInput'),
+      entitySearchBox: document.getElementById('entitySearchBox'), entityOptions: document.getElementById('entityOptions'),
+      programSelect: document.getElementById('programSelect'), followUpSelect: document.getElementById('followUpSelect'),
+      statInitiatives: document.getElementById('statInitiatives'), statEntities: document.getElementById('statEntities'), statAvg: document.getElementById('statAvg')
+    };
+
+    function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
+    function normalizeForCompare(v){ return String(v ?? '').replace(/\s+/g,' ').trim().replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[ًٌٍَُِّْـ]/g,'').toLowerCase(); }
+    function pctNumber(v){ const str = String(v || '0').trim(); let n = parseFloat(str.replace(/[^0-9.\-]/g, '')); if (!Number.isFinite(n)) return 0; if (n > 0 && n <= 1 && !str.includes('%')) { n = n * 100; } return n; }
+    
+    // 🌟 دوال مساعدة لربط الجهات برقم الـ ID
+    function getEntityNames(savedValue) {
+      if (!savedValue || savedValue === "—") return "—";
+      const parts = savedValue.split('،').map(s => s.trim());
+      const names = parts.map(part => {
+        let ent = entitiesList.find(e => String(e.id) === String(part));
+        if (!ent) ent = entitiesList.find(e => e.name === part);
+        return ent ? ent.name : part; 
+      }).filter(Boolean);
+      return names.length > 0 ? names.join('، ') : "—";
+    }
+
+    function getEntityIds(savedValue) {
+      if (!savedValue || savedValue === "—") return [];
+      const parts = savedValue.split('،').map(s => s.trim());
+      return parts.map(part => {
+        let ent = entitiesList.find(e => String(e.id) === String(part));
+        if (!ent) ent = entitiesList.find(e => e.name === part);
+        return ent ? String(ent.id) : part; 
+      });
+    }
+
+    function updateMultiSelectDisplay(dropdownId, dispId) { 
+      const checkboxes = document.querySelectorAll(`#${dropdownId} input[type="checkbox"]:checked`); 
+      const names = Array.from(checkboxes).map(cb => cb.dataset.name);
+      document.getElementById(dispId).textContent = names.length > 0 ? names.join('، ') : 'اختر الجهات...'; 
+    }
+    
+    let toastTimeout;
+    function showToast(message, type = "") {
+      const toast = document.getElementById("toastPopup");
+      toast.className = "toast-popup show " + type; toast.innerHTML = message;
+      clearTimeout(toastTimeout);
+      if(type === "success" || type === "error") { toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3500); }
+    }
+
+    // إدارة النشاط والخمول
+// ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
+    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+
+    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
+    async function executeAutoLogout() {
+      localStorage.removeItem('last_activity_time');
+      if (window.supabaseClient) {
+          await window.supabaseClient.auth.signOut();
+      }
+      currentUser = null;
+      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
+      window.location.href = 'index.html?timeout=1';
+    }
+
+    function checkInactivity() {
+      const lastActive = localStorage.getItem('last_activity_time');
+      if (lastActive && (Date.now() - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+        executeAutoLogout();
+      }
+    }
+
+    function resetActivityTimer() {
+      const now = Date.now();
+      const lastActive = localStorage.getItem('last_activity_time');
+
+      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
+      if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+         executeAutoLogout();
+         return;
+      }
+
+      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
+      if (now - lastActivityUpdate > 3000) {
+        localStorage.setItem('last_activity_time', now);
+        lastActivityUpdate = now;
+      }
+    }
+
+    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
+    ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
+        document.addEventListener(event, resetActivityTimer, { passive: true });
+    });
+
+    // الفحص الدوري
+    setInterval(checkInactivity, 60000); 
+    // -----------------------------------------------------------------
+
+    async function fetchUserProfile(email) {
+      const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
+      if (error || !data) { alert("حسابك غير مسجل في قائمة الصلاحيات."); await window.supabaseClient.auth.signOut(); window.location.href = 'index.html'; return null; }
+      return { email: data.email, name: data.name || email.split('@')[0], role: String(data.role || 'viewer').toLowerCase().trim(), allowed_initiatives: data.allowed_initiatives || '' };
+    }
+
+    window.onload = async function() {
+      try {
+        const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+        if (session && session.user) {
+          currentUser = await fetchUserProfile(session.user.email);
+          resetActivityTimer();
+          initAppAfterLogin();
+        } else { window.location.href = 'index.html'; } 
+      } catch(e) { window.location.href = 'index.html'; }
+    };
+
+    async function logoutUser(msg = "تم تسجيل الخروج بنجاح.") { 
+      await window.supabaseClient.auth.signOut(); 
+      localStorage.removeItem('last_activity_time');
+      currentUser = null;
+      if(msg) alert(msg);
+      window.location.href = 'index.html'; 
+    }
+    
+    function toggleUserDropdown() { if (currentUser && currentUser.role === 'admin') document.getElementById("userDropdownMenu").classList.toggle("show"); }
+    function goToAdminPage() { window.location.href = "admin.html"; }
+
+    function initAppAfterLogin() {
+      document.getElementById('appHeader').classList.remove('hidden'); 
+      document.getElementById('appContent').classList.remove('hidden');
+      document.getElementById('displayUserName').textContent = currentUser.name;
+      if (currentUser.role === 'admin') {
+        document.getElementById('displayUserRole').textContent = 'مدير النظام'; 
+        document.getElementById('displayUserName').style.cursor = 'pointer';
+        document.getElementById('displayUserName').style.textDecoration = 'underline';
+        document.getElementById('btnAdminUsers').classList.remove('hidden'); 
+        document.getElementById('btnAdminEntities').classList.remove('hidden'); 
+      } else { 
+        document.getElementById('displayUserRole').textContent = currentUser.role === 'editor' ? 'صلاحية التعديل' : 'للمشاهدة فقط';
+      }
+      loadAllDataFromServer();
+    }
+
+    function autoResize(el) { if(!el) return; el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }
+    function initAutoResize() { document.querySelectorAll('textarea.card-control').forEach(el => { autoResize(el); el.addEventListener('input', function() { autoResize(this); }); }); }
+
+    async function loadAllDataFromServer() {
+      showToast("⏳ جاري الاتصال بالخادم ...");
+      try {
+        const { data: initData, error: initError } = await window.supabaseClient.from('initiatives').select('*').order('initiative_number', { ascending: true });
+        if (initError) throw initError;
+
+        const { data: entData, error: entError } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
+        if (entError) {
+          const uniqueEntities = [...new Set((initData || []).map(i => i.executing_entity).filter(Boolean))];
+          entitiesList = uniqueEntities.map((name, index) => ({ id: index, name: name, contact: "—", phone: "—", email: "—" }));
+        } else { entitiesList = entData || []; }
+
+        let rawInitiatives = initData || [];
+        if (currentUser.role !== 'admin' && currentUser.allowed_initiatives && currentUser.allowed_initiatives.trim() !== '') {
+           const allowedIds = currentUser.allowed_initiatives.split(',').map(s => s.trim());
+           rawInitiatives = rawInitiatives.filter(item => allowedIds.includes(String(item.initiative_number).trim()));
+        }
+
+        initiatives = rawInitiatives.map(item => {
+          let parsedGoals = item.goals ? item.goals.split('|').map(g => g.trim()).filter(Boolean) : [];
+          let parsedKpis = item.kpis ? item.kpis.split('|').map(k => k.trim()).filter(Boolean) : [];
+          let parsedPlan = []; 
+          if(item.action_plan) { try { parsedPlan = JSON.parse(item.action_plan); } catch(e) { } }
+          
+          return {
+            id: item.id, initiativeNo: item.initiative_number || "—", initiativeName: item.initiative_name || "—",
+            timeline: item.timeline || "—", completionPercent: item.completion_percentage || 0,
+            estimatedBudget: item.estimated_budget || "—", remainingAmount: item.remaining_amount || "—",
+            description: item.description || "", executingEntity: item.executing_entity || "—",
+            supportingEntity: item.supporting_entity || "—", programName: item.program_name || "—",
+            followUpManager: item.follow_up_responsible || "—", actionPlan: parsedPlan, goals: parsedGoals, indicators: parsedKpis,
+            status: item.status || "لم تبدأ", challenges: item.challenges || ""
+          };
+        });
+
+        renderEntityOptions(''); populateFollowUpOptions(); renderCards();
+        if(document.getElementById('entityModal').classList.contains('show')){ renderEntityTable(); }
+        showToast("✅ اكتمل تحميل البيانات.", "success");
+      } catch(err) { showToast('❌ فشل جلب البيانات: ' + err.message, "error"); }
+    }
+
+    function populateFollowUpOptions() {
+      const managers = new Set();
+      initiatives.forEach(item => { if(item.followUpManager && item.followUpManager.trim() !== "" && item.followUpManager !== "—") managers.add(item.followUpManager.trim()); });
+      const opts = ['<option value="">كل المسؤولين عن المتابعة</option>'];
+      Array.from(managers).sort().forEach(m => { opts.push(`<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`); });
+      els.followUpSelect.innerHTML = opts.join('');
+    }
+
+    function getFilteredData(){
+      const q = normalizeForCompare(els.searchInput.value), fu = normalizeForCompare(els.followUpSelect.value), prog = normalizeForCompare(els.programSelect.value);
+      let data = initiatives.filter(item => {
+        const execNames = getEntityNames(item.executingEntity); // 🌟 استخدام الاسم للبحث بدلاً من الـ ID
+        const blob = [item.initiativeNo, item.initiativeName, item.description, execNames].join(' ');
+        return (!q || normalizeForCompare(blob).includes(q)) && 
+               (!selectedEntity || normalizeForCompare(execNames).includes(normalizeForCompare(selectedEntity))) && 
+               (!fu || normalizeForCompare(item.followUpManager).includes(fu)) && 
+               (!prog || normalizeForCompare(item.programName).includes(prog));
+      });
+      return data.slice().sort((a,b)=> String(a.initiativeNo).localeCompare(String(b.initiativeNo), 'ar', {numeric:true}) );
+    }
+
+    function renderCards(){
+      const data = getFilteredData();
+      els.statInitiatives.textContent = data.length;
+      els.statEntities.textContent = new Set(data.map(x => String(x.executingEntity).trim()).filter(x => x && x !== '—')).size;
+      els.statAvg.textContent = (data.length ? Math.round(data.reduce((s,x)=>s+pctNumber(x.completionPercent),0)/data.length) : 0) + '%';
+      
+      if (!data.length){ els.cards.innerHTML = '<div class="empty" style="grid-column:1/-1">لا توجد مبادرات مطابقة لنتائج التصفية الحالية.</div>'; return; }
+      
+      els.cards.innerHTML = data.map(item => {
+        const pct = Math.max(0, Math.min(100, pctNumber(item.completionPercent)));
+        const execNamesDisplay = getEntityNames(item.executingEntity); // 🌟 العرض بالاسم
+        
+        const goalsHtml = item.goals.length ? item.goals.map(g => `<li><div style="display:flex;gap:6px;"><textarea class="card-control text" rows="1" disabled>${escapeHtml(g)}</textarea></div></li>`).join('') : '<div class="empty">لم تسجل أهداف</div>';
+        const indsHtml = item.indicators.length ? item.indicators.map(n => `<li><div style="display:flex;gap:6px;"><textarea class="card-control text" rows="1" disabled>${escapeHtml(n)}</textarea></div></li>`).join('') : '<div class="empty">لم تسجل مؤشرات</div>';
+        
+        let statusColor = '#64748b'; if(item.status === 'مكتملة') statusColor = '#16a34a'; else if(item.status === 'قيد التنفيذ') statusColor = '#eab308';
+
+        return `<article class="card">
+          <div class="card-head">
+            <div class="topline">
+              <div style="display:flex; gap:8px;">
+                <span class="badge">${escapeHtml(item.initiativeNo || 'بدون رقم')}</span>
+                <span class="badge" style="background:${statusColor};">${escapeHtml(item.status || 'لم تبدأ')}</span>
+              </div>
+              <button class="btn-review" style="padding: 4px 12px; font-size: 12px;" onclick="window.open('initiative.html?id=${item.id}', '_blank')">استعراض المبادرة ↗️</button>
+            </div>
+            <h2><textarea class="card-control text" rows="1" disabled>${escapeHtml(item.initiativeName)}</textarea></h2>
+            <div class="meta">
+              <div class="mini"><span>الخطة الزمنية</span><b><textarea class="card-control" rows="1" disabled>${escapeHtml(item.timeline)}</textarea></b></div>
+              <div class="mini"><span>نسبة التنفيذ</span><b><textarea class="card-control" rows="1" disabled>${Math.round(pct)}%</textarea></b><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>
+              <div class="mini"><span>الموازنة التقديرية</span><b><textarea class="card-control" rows="1" disabled>${escapeHtml(item.estimatedBudget)}</textarea></b></div>
+              <div class="mini"><span>المبلغ المتبقي</span><b><textarea class="card-control" rows="1" disabled>${escapeHtml(item.remainingAmount)}</textarea></b></div>
+              <div class="mini" style="grid-column: span 2;"><span>الجهة المنفذة</span><b><textarea class="card-control" rows="1" disabled>${escapeHtml(execNamesDisplay)}</textarea></b></div>
+              <div class="mini" style="grid-column: span 2;"><span>الجهة المساندة</span><b><textarea class="card-control" rows="1" disabled>${escapeHtml(item.supportingEntity)}</textarea></b></div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="section"><div class="section-title">وصف المبادرة</div><div class="text"><textarea class="card-control" rows="1" disabled>${escapeHtml(item.description)}</textarea></div></div>
+            <div class="section grid-2col">
+              <div>
+                <div class="section-title">أهداف المبادرة</div>
+                <ul class="list">${goalsHtml}</ul>
+              </div>
+              <div>
+                <div class="section-title">المؤشرات الرئيسية</div>
+                <ul class="list">${indsHtml}</ul>
+              </div>
+            </div>
+          </div>
+        </article>`;
+      }).join('');
+      initAutoResize();
+    }
+
+    function renderEntityOptions(filterText){
+      const f = normalizeForCompare(filterText);
+      const options = [''].concat(entitiesList.map(e => e.name)).filter(v => !v || !f || normalizeForCompare(v).includes(f));
+      els.entityOptions.innerHTML = options.map(v => `<div class="entity-option ${v===selectedEntity?'active':''}" data-value="${escapeHtml(v)}">${escapeHtml(v || 'كل الجهات المنفذة')}</div>`).join('');
+    }
+
+    els.searchInput.addEventListener('input', renderCards); els.followUpSelect.addEventListener('change', renderCards);
+    els.programSelect.addEventListener('change', renderCards); els.entitySearchBox.addEventListener('focus', () => els.entityOptions.classList.remove('hidden')); els.entitySearchBox.addEventListener('input', () => { selectedEntity = els.entitySearchBox.value; renderEntityOptions(selectedEntity); renderCards(); });
+    els.entityOptions.addEventListener('mousedown', e => { const opt = e.target.closest('.entity-option'); if(opt) { selectedEntity = opt.dataset.value; els.entitySearchBox.value = selectedEntity; els.entitySearchBox.placeholder = selectedEntity || 'كل الجهات المنفذة'; els.entityOptions.classList.add('hidden'); renderCards(); } });
+    function toggleMenu() { document.getElementById("dropdownMenu").classList.toggle("show"); }
+
+    /* تفاصيل دوال الجهات المنفذة */
+    function openManageEntitiesModal() { renderEntityTable(); document.getElementById('entityModal').classList.add('show'); }
+    function closeEntityModal() { document.getElementById('entityModal').classList.remove('show'); }
+    
+    function renderEntityTable() {
+      const tbody = document.getElementById('entityTableBody');
+      tbody.innerHTML = entitiesList.map(e => `
+        <tr><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.name)}</td><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.contact || '—')}</td><td style="padding:8px; border-bottom:1px solid var(--line);"><span dir="ltr">${escapeHtml(e.phone || '—')}</span></td><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.email || '—')}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--line); text-align:center"><button class="btn-review btn-edit-mode" style="background:#eab308; color:#000; padding:4px 10px;" onclick="editEntityForm('${e.id || ''}', '${escapeHtml(e.name)}', '${escapeHtml(e.contact || '')}', '${escapeHtml(e.phone || '')}', '${escapeHtml(e.email || '')}')">تعديل</button></td></tr>
+      `).join('');
+    }
+    function editEntityForm(id, name, contact, phone, email) { document.getElementById('ent_rowIndex').value = id; document.getElementById('ent_name').value = name; document.getElementById('ent_contact').value = contact; document.getElementById('ent_phone').value = phone; document.getElementById('ent_email').value = email; }
+    function resetEntityForm() { document.getElementById('ent_rowIndex').value = ""; document.getElementById('ent_name').value = ""; document.getElementById('ent_contact').value = ""; document.getElementById('ent_phone').value = ""; document.getElementById('ent_email').value = ""; }
+    
+    async function saveEntity() {
+       const id = document.getElementById('ent_rowIndex').value;
+       const name = document.getElementById('ent_name').value.trim();
+       const contact = document.getElementById('ent_contact').value.trim();
+       const phone = document.getElementById('ent_phone').value.trim();
+       const email = document.getElementById('ent_email').value.trim();
+       if(!name) { showToast("اسم الجهة مطلوب", "error"); return; }
+       showToast("⏳ جاري الحفظ...");
+       const payload = { name, contact, phone, email };
+       let result;
+       
+       if(id) { result = await window.supabaseClient.from('entities').update(payload).eq('id', id); } 
+       else { result = await window.supabaseClient.from('entities').insert([payload]); }
+
+       if(result.error) { 
+           showToast("فشل حفظ البيانات: " + result.error.message, "error"); 
+       } else { 
+           showToast("✅ تم حفظ الجهة بنجاح", "success"); 
+           resetEntityForm(); 
+           
+           // التحديث الفوري للجدول بعد الحفظ
+           const { data: updatedEntities } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
+           if(updatedEntities) {
+               entitiesList = updatedEntities; 
+               renderEntityTable(); 
+               if (typeof renderEntityOptions === 'function') { renderEntityOptions(document.getElementById('entitySearchBox').value || ''); }
+               loadAllDataFromServer();
+           }
+       }
+    }
+
+    /* دوال الاكسل والبوربوينت (باستخدام أسماء الجهات بدل الأرقام) */
+    function exportToExcel() {
+      const data = getFilteredData();
+      if (!data.length) { showToast("لا توجد مبادرات.", "error"); return; } showToast("⏳ جاري تجهيز Excel...");
+      const ws = XLSX.utils.json_to_sheet(data.map(item => ({ "رقم المبادرة": item.initiativeNo, "اسم المبادرة": item.initiativeName, "الجهة المنفذة": getEntityNames(item.executingEntity), "الجهة المساندة": item.supportingEntity, "برنامج الاستراتيجية": item.programName, "الخطة الزمنية": item.timeline, "نسبة التنفيذ": Math.round(Math.max(0, Math.min(100, pctNumber(item.completionPercent)))) + '%', "الموازنة التقديرية": item.estimatedBudget, "المبلغ المتبقي": item.remainingAmount, "وصف المبادرة": item.description, "أهداف المبادرة": Array.isArray(item.goals) ? item.goals.join(' | ') : item.goals, "المؤشرات الرئيسية": Array.isArray(item.indicators) ? item.indicators.join(' | ') : item.indicators, "خطة العمل": item.actionPlan && item.actionPlan.length ? item.actionPlan.map(p => `${p.no}- ${p.procedure} (الوزن: ${p.weight}% | الحالة: ${p.status})`).join(' \n ') : "" })));
+      ws['!dir'] = 'rtl'; const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "المبادرات"); XLSX.writeFile(wb, "المبادرات_الصناعية.xlsx"); showToast("✅ تم التحميل.", "success");
+    }
+
+    function exportToPowerPoint() {
+      const data = getFilteredData();
+      if (!data.length) { showToast("لا توجد بيانات", "error"); return; } showToast("⏳ جاري إنشاء البوربوينت ...", "success");
+      let pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_16x9'; 
+      const fixRtlText = (text) => text ? text.toString().replace(/\(/g, '&&OPEN&&').replace(/\)/g, '(').replace(/&&OPEN&&/g, ')') : "—";
+      const getFontSize = (text, type) => { let len = (text || "").toString().length;
+      if(type === 'title') return len > 60 ? 11 : (len > 40 ? 13 : 15);
+      if(type === 'desc') return len > 350 ? 8 : (len > 250 ? 9 : (len > 150 ? 10 : 11));
+      if(type === 'box') return len > 250 ? 8 : (len > 150 ? 9 : (len > 80 ? 10 : 11));
+      if(type === 'table') return len > 80 ? 8 : (len > 120 ? 7 : 9); return 11; };
+      data.forEach(item => {
+        let slide = pptx.addSlide(); slide.background = { color: "F8FAFC" }; const brandColor = "0B4F6C", altColor = "176B87", rtlOpts = { rtlMode: true, wrap: true, breakLine: true, isRtl: true };
+        slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.7, fill: "FFFFFF", line: { color: "E2E8F0", width: 1 } }); slide.addShape(pptx.ShapeType.roundRect, { x: 8.8, y: 0.1, w: 1.0, h: 0.5, fill: brandColor, rectRadius: 0.1 }); slide.addText(item.initiativeNo || "—", { x: 8.8, y: 0.1, w: 1.0, h: 0.5, color: "FFFFFF", bold: true, align: "center", valign: "middle", ...rtlOpts, fontSize: 12 });
+        slide.addText(fixRtlText(item.initiativeName), { x: 4.5, y: 0.1, w: 4.2, h: 0.5, color: brandColor, bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: getFontSize(item.initiativeName, 'title') });
+        slide.addText("الخطة الزمنية:", { x: 2.5, y: 0.1, w: 1.0, h: 0.5, color: "64748B", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addText(fixRtlText(item.timeline), { x: 1.5, y: 0.1, w: 1.0, h: 0.5, color: brandColor, bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 12 });
+        slide.addText("نسبة التنفيذ:", { x: 0.8, y: 0.1, w: 1.0, h: 0.5, color: "64748B", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addText(fixRtlText(Math.round(Math.max(0, Math.min(100, pctNumber(item.completionPercent)))) + '%'), { x: 0.1, y: 0.1, w: 0.7, h: 0.5, color: altColor, bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 12 });
+        slide.addShape(pptx.ShapeType.rect, { x: 0, y: 4.925, w: 10, h: 0.7, fill: brandColor });
+        slide.addText("الجهة المنفذة:", { x: 8.8, y: 5.0, w: 1.0, h: 0.55, color: "F8FAFC", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 10 });
+        slide.addText(fixRtlText(getEntityNames(item.executingEntity)), { x: 6.8, y: 5.0, w: 2.0, h: 0.55, color: "FFFFFF", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addText("الجهة المساندة:", { x: 5.5, y: 5.0, w: 1.0, h: 0.55, color: "F8FAFC", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 10 });
+        slide.addText(fixRtlText(item.supportingEntity), { x: 3.2, y: 5.0, w: 2.3, h: 0.55, color: "FFFFFF", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addText("الموازنة:", { x: 2.1, y: 5.0, w: 0.8, h: 0.55, color: "F8FAFC", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 10 });
+        slide.addText(fixRtlText(item.estimatedBudget), { x: 1.4, y: 5.0, w: 0.7, h: 0.55, color: "FFFFFF", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addText("المتبقي:", { x: 0.7, y: 5.0, w: 0.7, h: 0.55, color: "F8FAFC", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 10 });
+        slide.addText(fixRtlText(item.remainingAmount), { x: 0.0, y: 5.0, w: 0.7, h: 0.55, color: "FFFFFF", bold: true, align: "right", valign: "middle", ...rtlOpts, fontSize: 11 });
+        slide.addShape(pptx.ShapeType.rect, { x: 5.1, y: 0.85, w: 4.7, h: 1.3, fill: "FFFFFF", line: { color: "E2E8F0", width: 1 } });
+        slide.addText("وصف المبادرة", { x: 5.1, y: 0.9, w: 4.7, h: 0.25, color: brandColor, bold: true, align: "center", ...rtlOpts, fontSize: 12 });
+        slide.addText(fixRtlText(item.description), { x: 5.1, y: 1.2, w: 4.7, h: 0.9, color: "334155", align: "right", valign: "top", ...rtlOpts, fontSize: getFontSize(item.description, 'desc') });
+        let goalsArr = Array.isArray(item.goals) ? item.goals.filter(Boolean) : [item.goals].filter(Boolean);
+        slide.addShape(pptx.ShapeType.rect, { x: 7.55, y: 2.25, w: 2.25, h: 2.5, fill: "FFFFFF", line: { color: "E2E8F0", width: 1 } });
+        slide.addText("أهداف المبادرة", { x: 7.55, y: 2.3, w: 2.25, h: 0.25, color: brandColor, bold: true, align: "center", ...rtlOpts, fontSize: 12 });
+        slide.addText(goalsArr.length > 0 ? goalsArr.map((g, i) => ({ text: ` .${i + 1} ${fixRtlText(g)}`, options: { breakLine: true, paraSpaceAfter: 6, rtlMode: true, align: "right" } })) : [{ text: "—", options: { align: "right", rtlMode: true } }], { x: 7.55, y: 2.6, w: 2.25, h: 2.1, color: "334155", valign: "top", align: "right", rtlMode: true, fontSize: getFontSize(goalsArr.map((g, i) => ` .${i + 1} ${fixRtlText(g)}`).join("\n"), 'box') });
+        let indsArr = Array.isArray(item.indicators) ? item.indicators.filter(Boolean) : [item.indicators].filter(Boolean);
+        slide.addShape(pptx.ShapeType.rect, { x: 5.1, y: 2.25, w: 2.25, h: 2.5, fill: "FFFFFF", line: { color: "E2E8F0", width: 1 } });
+        slide.addText("المؤشرات الرئيسية", { x: 5.1, y: 2.3, w: 2.25, h: 0.25, color: brandColor, bold: true, align: "center", ...rtlOpts, fontSize: 12 });
+        slide.addText(indsArr.length > 0 ? indsArr.map((ind, i) => ({ text: ` .${i + 1} ${fixRtlText(ind)}`, options: { breakLine: true, paraSpaceAfter: 6, rtlMode: true, align: "right" } })) : [{ text: "—", options: { align: "right", rtlMode: true } }], { x: 5.1, y: 2.6, w: 2.25, h: 2.1, color: "334155", valign: "top", align: "right", rtlMode: true, fontSize: getFontSize(indsArr.map((ind, i) => ` .${i + 1} ${fixRtlText(ind)}`).join("\n"), 'box') });
+        slide.addShape(pptx.ShapeType.rect, { x: 0.2, y: 0.85, w: 4.7, h: 3.9, fill: "FFFFFF", line: { color: "E2E8F0", width: 1 } });
+        slide.addText("خطة العمل / خطوات التنفيذ", { x: 0.2, y: 0.9, w: 4.7, h: 0.3, color: brandColor, bold: true, align: "center", ...rtlOpts, fontSize: 12 });
+        let tblRows = [[{ text: "الحالة", options: { fill: "F1F5F9", bold: true, align: "center", rtlMode: true, isRtl: true, fontFace: "Tahoma", fontSize: 10 } }, { text: "الوزن", options: { fill: "F1F5F9", bold: true, align: "center", rtlMode: true, isRtl: true, fontFace: "Tahoma", fontSize: 10 } }, { text: "الإجراءات المعتمدة", options: { fill: "F1F5F9", bold: true, align: "right", rtlMode: true, isRtl: true, fontFace: "Tahoma", fontSize: 10 } }, { text: "#", options: { fill: "F1F5F9", bold: true, align: "center", rtlMode: true, isRtl: true, fontFace: "Tahoma", fontSize: 10 } }]];
+        if(item.actionPlan && item.actionPlan.length > 0) {
+            item.actionPlan.slice(0, 8).forEach(p => {
+                let sColor = "0F172A"; if (p.status && (p.status.includes("اكتمل") || p.status.includes("منجز"))) sColor = "16A34A"; else if (p.status && (p.status.includes("متأخر") || p.status.includes("ملغى"))) sColor = "EF4444";
+                if (p.procedure || p.status) tblRows.push([{ text: fixRtlText(p.status), options: { align: "center", color: sColor, rtlMode: true, isRtl: true, fontSize: getFontSize(p.procedure, 'table') } }, { text: fixRtlText(p.weight + '%'), options: { align: "center", rtlMode: true, isRtl: true, fontSize: getFontSize(p.procedure, 'table') } }, { text: fixRtlText(p.procedure), options: { align: "right", rtlMode: true, isRtl: true, fontSize: getFontSize(p.procedure, 'table') } }, { text: fixRtlText(p.no) || "•", options: { align: "center", color: altColor, bold: true, rtlMode: true, isRtl: true, fontSize: getFontSize(p.procedure, 'table') } }]);
+            });
+        }
+        if(tblRows.length === 1) tblRows.push([{ text: "لا توجد خطوات مسجلة", options: { colspan: 4, align: "center", color: "64748B", rtlMode: true, isRtl: true } }]);
+        slide.addTable(tblRows, { x: 0.2, y: 1.25, w: 4.7, colW: [0.8, 0.6, 3.0, 0.3], border: { pt: 0.5, color: "E2E8F0" }, fontSize: 9, valign: "middle", rtlMode: true, autoPage: false });
+      });
+      pptx.writeFile({ fileName: `المبادرات_${new Date().getTime()}.pptx` }).then(() => showToast("✅ تم التصدير بنجاح", "success")).catch(err => showToast("❌ خطأ: " + err, "error"));
+    }
+
+    /* دالة الشات بوت العائم للصفحة الرئيسية */
+    function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput'); const msg = input.value.trim(); if(!msg) return;
+      const chatBody = document.getElementById('chatBody'); chatBody.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
+      chatHistoryLog.push({ role: 'user', parts: [{ text: msg }] }); input.value = '';
+      const loadingId = 'loading-' + Date.now(); chatBody.innerHTML += `<div class="chat-msg ai" id="${loadingId}">⏳...</div>`; chatBody.scrollTop = chatBody.scrollHeight;
+      
+      let contextData = initiatives.map(item => `[رقم المبادرة: ${item.initiativeNo}] المبادرة: ${item.initiativeName}، النسبة: ${Math.round(pctNumber(item.completionPercent))}%، المنفذ: ${getEntityNames(item.executingEntity)}`).join('\n');
+      const { data: res, error } = await window.supabaseClient.functions.invoke('chat-bot', { body: { context: contextData, history: chatHistoryLog.slice(-5) } });
+      
+      document.getElementById(loadingId).remove();
+      if(!error && res.success) { chatBody.innerHTML += `<div class="chat-msg ai">${res.reply.replace(/\n/g, '<br>')}</div>`; chatHistoryLog.push({ role: 'model', parts: [{ text: res.reply }] }); }
+      else { chatBody.innerHTML += `<div class="chat-msg ai" style="color:red">❌ فشل الاتصال.</div>`; }
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+  </script>
+</body>
+</html>
