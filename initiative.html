@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تفاصيل المبادرة - الاستراتيجية الصناعية 2040</title>
+  <script src="supabase.js"></script>
+  
+  <style>
+    :root{ --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --brand:#176b87; --brand2:#0b4f6c; --soft:#f0f7f9; --shadow:0 10px 30px rgba(15, 23, 42, .04); --radius:16px; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family: Tahoma, Arial, sans-serif; background: var(--bg); color:var(--ink); line-height:1.7;}
+    .shell{max-width:1440px;margin:auto;padding:16px}
+    
+    .header-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 18px 32px; box-shadow: var(--shadow); border-bottom: 3px solid var(--brand); width: 100%; margin-bottom:20px; }
+    .header-bar h1 { margin: 0; color: var(--brand2); font-size: 22px; font-weight: 800; }
+    .header-user { display: flex; align-items: center; gap: 16px; font-weight: bold; }
+    
+    .btn-primary { background: var(--brand); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; cursor: pointer; font-weight: bold; font-family: inherit; transition: 0.2s; }
+    .btn-primary:hover { background: var(--brand2); }
+    .btn-logout { background: #ef4444; color: #fff; border: none; border-radius: 8px; padding: 6px 16px; cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s; }
+    .btn-logout:hover { background: #dc2626; }
+    
+    .dropdown { position: relative; display: inline-block; height: 100%; }
+    .dropdown-content { display: none; position: absolute; left: 0; top: calc(100% + 8px); background-color: #fff; min-width: 240px; box-shadow: var(--shadow); border: 1px solid var(--line); border-radius: 12px; z-index: 1000; overflow: hidden; }
+    .dropdown-content.show { display: block; }
+    .dropdown-content button { width: 100%; text-align: right; padding: 14px 16px; border: none; background: transparent; font-family: inherit; font-size: 13.5px; cursor: pointer; color: var(--ink); border-bottom: 1px solid var(--line); }
+    .dropdown-content button:hover { background-color: var(--soft); color: var(--brand2); font-weight: bold; }
+
+    .toast-popup { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--brand2); color: #fff; padding: 12px 24px; border-radius: 30px; font-weight: bold; font-size: 14.5px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 10005; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+    .toast-popup.show { opacity: 1; top: 40px; }
+    .toast-popup.success { background: #16a34a; }
+    .toast-popup.error { background: #ef4444; }
+
+    .card{background:var(--card);border:2px solid var(--brand);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .card-head{padding:20px;background:linear-gradient(180deg,#fff,var(--soft));border-bottom:1px solid var(--line)}
+    .topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .badge{background:var(--brand2);color:#fff;border-radius:20px;padding:6px 16px;font-weight:bold;font-size:14px;direction:ltr;display:inline-block;}
+    
+    .btn-review{background:var(--brand);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:bold;}
+    .btn-edit-mode { background:#eab308; color:#0f172a; } .btn-edit-mode:hover { background:#ca8a04; color:#fff; }
+    .btn-save-mode { background:#16a34a; } .btn-cancel-mode { background:#ef4444; }
+
+    .card h2{margin:0 0 16px 0;font-size:22px;line-height:1.5;color:#0f172a}
+    
+    .meta{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+    .mini{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:60px;position:relative;}
+    .mini span{display:block;color:var(--muted);font-size:12px;line-height:1.2;margin-bottom:4px;}
+    .mini b{font-size:14px;word-break:break-word;}
+    .progress{height:8px;background:#e2e8f0;border-radius:10px;margin-top:6px;overflow:hidden;}
+    .bar{height:100%;background:var(--brand);border-radius:10px;}
+    
+    .card-body{padding:24px;}
+    .section{margin-bottom:24px}
+    .section-title{font-weight:bold;color:var(--brand2);margin-bottom:10px;font-size:15px;display:flex;gap:8px;align-items:center; border-bottom:1px dashed var(--line); padding-bottom:6px;}
+    .section-title:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--brand)}
+    
+    .grid-info{display:grid;gap:12px}
+    .grid-2col{grid-template-columns:1fr 1fr;}
+    .grid-3col{grid-template-columns:repeat(3, 1fr);}
+    .grid-4col{grid-template-columns:repeat(4, 1fr);}
+    
+    .info{border:1px solid var(--line);border-radius:10px;padding:10px;background:#f8fafc; position:relative;}
+    .info span{display:block;color:var(--muted);font-size:12px; margin-bottom:4px;}
+    .info b{font-size:13.5px;color:#1e293b}
+    
+    .list{margin:0;padding:0 16px 0 0}.list li{margin:6px 0;color:#334155;font-size:13.5px}
+    
+    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;font-size:12px}
+    th,td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{background:#f1f5f9;color:#475569;text-align:right;font-weight:bold}
+    .num{width:30px;text-align:center;color:var(--brand2);font-weight:bold}
+    .empty{color:var(--muted);background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px;text-align:center;font-size:13px}
+    .hidden{display:none!important}
+
+    .card-control { width: 100%; border: 1px solid transparent; background: transparent; font-family: inherit; color: inherit; font-size: inherit; font-weight: inherit; outline: none; padding: 6px 8px; margin: 0; resize: none; overflow: hidden; line-height: 1.6; }
+    .card-control:disabled { cursor: text !important; -webkit-appearance: none; appearance: none; opacity: 1; }
+    .mode-edit .card-control:not(:disabled):not(.edit-input) { border: 1px dashed #cbd5e1; background: #fffdf6; border-radius: 6px; }
+
+    .edit-input { display: none; }
+    .mode-edit .text-view.togglable { display: none !important; }
+    .mode-edit .edit-input:not(.multi-select-container) { display: block; border: 1px dashed var(--brand); background: #f8fafc; padding: 8px; border-radius: 6px; width: 100%; font-family: inherit; font-size: 13px; color: var(--ink); }
+    .mode-edit input[type="date"].edit-input, .mode-edit select.edit-input, .mode-edit input[type="number"].edit-input { height: 38px; }
+    
+    .btn-circle { width: 24px; height: 24px; border-radius: 50%; border: none; color: white; font-weight: bold; cursor: pointer; display: none; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn-add-item { background: var(--brand); margin-top: 6px; margin-right: 16px; }
+    .btn-remove-item { background: #ef4444; width: 20px; height: 20px; margin-top: 6px; }
+    .mode-edit .btn-circle { display: inline-flex; }
+    
+    .act-cell-remove { display: none; width: 40px; text-align: center; vertical-align: middle; }
+    .mode-edit .act-cell-remove { display: table-cell; }
+
+    .mode-edit .multi-select-container.edit-input { display: block; border: none; padding: 0; background: transparent; overflow: visible; }
+    .multi-select-container { position: relative; width: 100%; overflow: visible; z-index:100; }
+    .multi-select-display { cursor: pointer; display: flex; align-items: center; min-height: 38px; border: 1px dashed var(--brand); background: #f8fafc; padding: 8px; border-radius: 6px; width: 100%; font-family: inherit; font-size: 13px; }
+    .multi-select-dropdown { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid var(--brand); border-radius: 8px; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.15); padding: 5px; }
+    .multi-select-dropdown.show { display: block; }
+    .multi-select-item { display: flex; align-items: center; gap: 8px; padding: 8px; cursor: pointer; font-size: 13px; border-radius: 6px; }
+    .multi-select-item:hover { background: var(--soft); color: var(--brand2); font-weight: bold; }
+    .multi-select-item input[type="checkbox"] { width: 16px; height: 16px; margin:0; }
+
+    /* نوافذ المستخدم (إدارة الجهات والمساعد) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content { background: #fff; border-radius: var(--radius); width: 850px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+    .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .form-grid label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px; color: var(--brand2); }
+    
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+    .chat-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; border: none; }
+    .chat-window { position: fixed; bottom: 100px; left: 30px; width: 360px; max-width: 90vw; height: 500px; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s ease; border: 1px solid var(--line); overflow: hidden; }
+    .chat-window.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .chat-header { background: var(--brand2); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+    .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
+    .chat-msg.user { align-self: flex-start; background: var(--brand); color: #fff; border-bottom-right-radius: 2px; }
+    .chat-msg.ai { align-self: flex-end; background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 2px; }
+    .chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid var(--line); gap: 8px; }
+    .chat-input-area input { flex: 1; border: 1px solid var(--line); border-radius: 20px; padding: 10px 16px; outline: none; font-family: inherit; }
+    .chat-input-area button { background: var(--brand); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="toastPopup" class="toast-popup"></div>
+
+  <div class="modal-overlay" id="entityModal">
+    <div class="modal-content">
+      <h2 style="color:var(--brand2); margin-top:0;">إدارة الجهات المنفذة</h2>
+      <div class="form-grid">
+        <input type="hidden" id="ent_rowIndex" value="" />
+        <div style="display:flex; flex-direction:column;"><label>اسم الجهة</label><input type="text" id="ent_name" placeholder="الاسم الكامل للجهة"></div>
+        <div style="display:flex; flex-direction:column;"><label>نقطة التواصل</label><input type="text" id="ent_contact" placeholder="اسم المسؤول"></div>
+        <div style="display:flex; flex-direction:column;"><label>رقم الهاتف</label><input type="text" id="ent_phone" placeholder="968+"></div>
+        <div style="display:flex; flex-direction:column;"><label>البريد الإلكتروني</label><input type="text" id="ent_email" placeholder="email@gov.om"></div>
+      </div>
+      <div style="margin-bottom: 24px; display:flex; gap:10px;">
+        <button class="btn-primary" onclick="saveEntity()">حفظ بيانات الجهة 💾</button>
+        <button class="btn-review" style="padding:10px 20px; background:#ef4444;" onclick="resetEntityForm()">تفريغ الحقول</button>
+      </div>
+      <table style="width: 100%; border: 1px solid var(--line); border-collapse: separate; border-spacing: 0; font-size:12px;">
+        <thead><tr>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">اسم الجهة</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">نقطة التواصل</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">رقم الهاتف</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:right;">الإيميل</th>
+          <th style="padding:8px; background:#f1f5f9; text-align:center; width:70px;">الإجراء</th>
+        </tr></thead>
+        <tbody id="entityTableBody"></tbody>
+      </table>
+      <div style="text-align:left; margin-top:20px; padding-top:15px; border-top:1px solid var(--line);">
+        <button class="btn-review" style="padding:8px 24px; background:#ef4444;" onclick="closeEntityModal()">إغلاق النافذة</button>
+      </div>
+    </div>
+  </div>
+
+  <header id="appHeader" class="header-bar shell" style="max-width: 100%; margin-bottom: 24px;">
+    <h1>الاستراتيجية الصناعية 2040</h1>
+    <div class="header-user">
+      <div class="dropdown" style="position: relative; display: inline-block;">
+        <span id="displayUserName" onclick="toggleUserDropdown()" style="padding: 4px 8px; border-radius: 8px;"></span>
+        <div id="userDropdownMenu" class="dropdown-content" style="right: 0; left: auto; min-width: 180px;">
+          <button id="btnAdminUsers" class="hidden" onclick="goToAdminPage()" style="font-weight: bold; color: var(--brand2);">إدارة المستخدمين</button>
+          <button id="btnAdminEntities" class="hidden" onclick="openManageEntitiesModal()" style="font-weight: bold; color: var(--brand2);">إدارة الجهات المنفذة</button>
+        </div>
+      </div>
+      <span id="displayUserRole" style="font-size:11px; background:#e2e8f0; padding:2px 8px; border-radius:10px; color:#475569;"></span>
+      <button class="btn-logout" onclick="logoutUser()">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main class="shell" id="detailsContainer" style="padding-top:0;">
+    <div style="text-align:center; padding:50px; color:var(--muted);" id="loadingMsg">⏳ جاري تحميل تفاصيل المبادرة...</div>
+  </main>
+
+  <div class="modal-overlay" id="aiModal">
+    <div class="modal-content" style="max-width: 850px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--soft); padding-bottom:10px; margin-bottom:15px;">
+        <h2 style="margin:0; color:#4f46e5; font-size:19px; display:flex; align-items:center; gap:8px;"><span>🤖</span> المستشار الاستراتيجي</h2>
+      </div>
+      <div id="aiLoading" style="text-align:center; padding:50px 20px; color:var(--brand2); font-weight:bold; display:none;">
+        <div style="font-size:45px; margin-bottom:15px; animation: pulse 1.5s infinite;">🧠</div>
+        جاري تحليل المبادرة... <br><span style="font-size:12px; color:var(--muted); font-weight:normal;">(يرجى الانتظار بضع دقائق)</span>
+      </div>
+      <div id="aiResponseContent" style="display:none; line-height:1.8; color:var(--ink); font-size:14.5px; padding:10px;"></div>
+      <div style="text-align:left; margin-top:24px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;">
+         <button id="btnDownloadCardWord" class="btn-review" style="background:#16a34a; padding:8px 24px; display:none;" onclick="downloadModalAsWord('aiResponseContent', 'تقرير_المبادرة')">تحميل التقرير (Word) 📝</button>
+         <button class="btn-review" style="background:var(--muted); padding:8px 24px" onclick="document.getElementById('aiModal').classList.remove('show')">إغلاق التقرير</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
+    try {
+      if (typeof supabase === 'undefined') throw new Error('فشل تحميل مكتبة Supabase من الشبكة (CDN). تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة.');
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (initErr) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:center;padding:20px;"><div><h2 style="color:#dc2626;">⚠️ تعذر تحميل التطبيق</h2><p style="color:#64748b;max-width:420px;">' + initErr.message + '</p><button onclick="location.reload()" style="margin-top:12px;padding:10px 24px;background:#176b87;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">إعادة المحاولة</button></div></div>';
+      throw initErr;
+    }
+
+    let currentItem = null;
+    let currentUser = null;
+    let entitiesList = [];
+    let chatHistoryLog = [];
+    const PROGRAM_OPTIONS = ['ابتكار صناعات جديدة وذات تكنولوجيا متقدمة','ريادة الاعمال والابتكار','التطوير والتحديث','الحوكمة وإدارة التنمية الصناعية'];
+    const STATUS_OPTIONS = ['لم تبدأ', 'قيد التنفيذ', 'مكتملة'];
+
+    function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
+    function pctNumber(v){ const str = String(v || '0').trim(); let n = parseFloat(str.replace(/[^0-9.\-]/g, '')); if (!Number.isFinite(n)) return 0; if (n > 0 && n <= 1 && !str.includes('%')) { n = n * 100; } return n; }
+    
+    // 🌟 دوال مساعدة لربط الجهات برقم الـ ID
+    function getEntityNames(savedValue) {
+      if (!savedValue || savedValue === "—") return "—";
+      const parts = savedValue.split('،').map(s => s.trim());
+      const names = parts.map(part => {
+        let ent = entitiesList.find(e => String(e.id) === String(part));
+        if (!ent) ent = entitiesList.find(e => e.name === part);
+        return ent ? ent.name : part; 
+      }).filter(Boolean);
+      return names.length > 0 ? names.join('، ') : "—";
+    }
+
+    function getEntityIds(savedValue) {
+      if (!savedValue || savedValue === "—") return [];
+      const parts = savedValue.split('،').map(s => s.trim());
+      return parts.map(part => {
+        let ent = entitiesList.find(e => String(e.id) === String(part));
+        if (!ent) ent = entitiesList.find(e => e.name === part);
+        return ent ? String(ent.id) : part; 
+      });
+    }
+
+    function updateMultiSelectDisplay(dropdownId, dispId) { 
+      const checkboxes = document.querySelectorAll(`#${dropdownId} input[type="checkbox"]:checked`); 
+      const names = Array.from(checkboxes).map(cb => cb.dataset.name);
+      document.getElementById(dispId).textContent = names.length > 0 ? names.join('، ') : 'اختر الجهات...'; 
+    }
+    
+    let toastTimeout;
+    function showToast(message, type = "") {
+      const toast = document.getElementById("toastPopup");
+      toast.className = "toast-popup show " + type; toast.innerHTML = message;
+      clearTimeout(toastTimeout);
+      if(type === "success" || type === "error") { toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3500); }
+    }
+
+    // إدارة النشاط والخمول
+// ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
+    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+
+    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
+    async function executeAutoLogout() {
+      localStorage.removeItem('last_activity_time');
+      if (window.supabaseClient) {
+          await window.supabaseClient.auth.signOut();
+      }
+      currentUser = null;
+      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
+      window.location.href = 'login.html?timeout=1';
+    }
+
+    function checkInactivity() {
+      const lastActive = localStorage.getItem('last_activity_time');
+      if (lastActive && (Date.now() - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+        executeAutoLogout();
+      }
+    }
+
+    function resetActivityTimer() {
+      const now = Date.now();
+      const lastActive = localStorage.getItem('last_activity_time');
+
+      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
+      if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+         executeAutoLogout();
+         return;
+      }
+
+      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
+      if (now - lastActivityUpdate > 3000) {
+        localStorage.setItem('last_activity_time', now);
+        lastActivityUpdate = now;
+      }
+    }
+
+    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
+    ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
+        document.addEventListener(event, resetActivityTimer, { passive: true });
+    });
+
+    // الفحص الدوري
+    setInterval(checkInactivity, 60000); 
+    // -----------------------------------------------------------------
+
+    async function fetchUserProfile(email) {
+      const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
+      if (error || !data) { alert("حسابك غير مسجل في قائمة الصلاحيات."); await window.supabaseClient.auth.signOut(); window.location.href = 'login.html'; return null; }
+      return { email: data.email, name: data.name || email.split('@')[0], role: String(data.role || 'viewer').toLowerCase().trim(), allowed_initiatives: data.allowed_initiatives || '' };
+    }
+
+    window.onload = async function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initId = urlParams.get('id');
+      if (!initId) { document.getElementById('loadingMsg').innerHTML = '❌ لم يتم تحديد مبادرة لعرضها. يرجى العودة للقائمة.'; return; }
+
+      try {
+        const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+        if (session && session.user) {
+          currentUser = await fetchUserProfile(session.user.email);
+          resetActivityTimer();
+          
+          document.getElementById('displayUserName').textContent = currentUser.name;
+          if (currentUser.role === 'admin') {
+            document.getElementById('displayUserRole').textContent = 'مدير النظام'; 
+            document.getElementById('displayUserName').style.cursor = 'pointer';
+            document.getElementById('displayUserName').style.textDecoration = 'underline';
+            document.getElementById('btnAdminUsers').classList.remove('hidden'); 
+            document.getElementById('btnAdminEntities').classList.remove('hidden'); 
+          } else { 
+            document.getElementById('displayUserRole').textContent = currentUser.role === 'editor' ? 'صلاحية التعديل' : 'للمشاهدة فقط';
+          }
+
+          await loadInitiativeData(initId);
+        } else { window.location.href = 'login.html'; }
+      } catch(e) { window.location.href = 'login.html'; }
+    };
+
+    async function logoutUser(msg = "تم تسجيل الخروج بنجاح.") { 
+      await window.supabaseClient.auth.signOut(); 
+      localStorage.removeItem('last_activity_time');
+      currentUser = null;
+      if(msg) alert(msg);
+      window.location.href = 'login.html'; 
+    }
+    
+    function toggleUserDropdown() { if (currentUser && currentUser.role === 'admin') document.getElementById("userDropdownMenu").classList.toggle("show"); }
+    function goToAdminPage() { window.location.href = "admin.html"; }
+
+    async function loadInitiativeData(id) {
+      try {
+        const { data: itemData, error } = await window.supabaseClient.from('initiatives').select('*').eq('id', id).single();
+        if (error || !itemData) throw new Error("المبادرة غير موجودة");
+        
+        const { data: entData } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
+        entitiesList = entData || [];
+
+        let parsedGoals = []; if(itemData.goals) parsedGoals = itemData.goals.split('|').map(g => g.trim()).filter(Boolean);
+        let parsedKpis = []; if(itemData.kpis) parsedKpis = itemData.kpis.split('|').map(k => k.trim()).filter(Boolean);
+        let parsedPlan = []; 
+        
+        if(itemData.action_plan) { 
+           try { 
+             parsedPlan = JSON.parse(itemData.action_plan); 
+           } catch(e) { 
+             let segments = itemData.action_plan.split('|').map(s => s.trim()).filter(Boolean);
+             segments.forEach((seg, idx) => {
+               let no = idx + 1; let procedure = seg; let status = "لم تبدأ";
+               let numMatch = seg.match(/^(\d+)\s*-\s*(.*)$/);
+               if (numMatch) { no = numMatch[1]; procedure = numMatch[2]; }
+               let statMatch = procedure.match(/^(.*)\s*<([^>]+)>\s*$/);
+               if (statMatch) { procedure = statMatch[1].trim(); status = statMatch[2].trim(); }
+               parsedPlan.push({ no: no, procedure: procedure, startDate: "", endDate: "", weight: 0, status: status, docPath: "" });
+             });
+           }
+        }
+
+        currentItem = {
+          id: itemData.id, initiativeNo: itemData.initiative_number, initiativeName: itemData.initiative_name,
+          timeline: itemData.timeline, completionPercent: itemData.completion_percentage, estimatedBudget: itemData.estimated_budget,
+          remainingAmount: itemData.remaining_amount, description: itemData.description, executingEntity: itemData.executing_entity,
+          supportingEntity: itemData.supporting_entity, responsibleDepartment: itemData.responsible_directorate, programName: itemData.program_name,
+          fiveYearPrograms: itemData.five_year_programs, fiveYearIndicators: itemData.five_year_indicators, startDate: itemData.start_date,
+          endDate: itemData.end_date, status: itemData.status, followUpManager: itemData.follow_up_responsible, executivePosition: itemData.executive_status,
+          challenges: itemData.challenges, lastUpdate: itemData.latest_update, notes: itemData.notes, executionManager: itemData.implementation_manager,
+          phone: itemData.phone_number, email: itemData.email, lastEditor: itemData.last_modified_by,
+          lastEditDate: itemData.last_modified_date ? new Date(itemData.last_modified_date).toLocaleDateString('ar-OM') : "—",
+          goals: parsedGoals, indicators: parsedKpis, actionPlan: parsedPlan, plan3FeetFile: itemData.plan_3feet_file
+        };
+
+        renderDetails();
+      } catch (err) {
+        document.getElementById('loadingMsg').innerHTML = '❌ فشل تحميل البيانات: ' + err.message;
+      }
+    }
+
+    function renderDetails() {
+      const item = currentItem;
+      const container = document.getElementById('detailsContainer');
+      const pct = Math.max(0, Math.min(100, pctNumber(item.completionPercent)));
+      
+      const canEdit = currentUser && (currentUser.role === 'editor' || currentUser.role === 'admin');
+      const editBtnHtml = canEdit ? `<button type="button" class="btn-review btn-edit-mode" id="btnEdit" onclick="enableEditMode()">تعديل البيانات 📝</button>` : '';
+      
+      const execNamesDisplay = getEntityNames(item.executingEntity);
+      const currentExecIds = getEntityIds(item.executingEntity);
+
+      const checkBoxesHtml = entitiesList.map(e => { 
+        const isChecked = currentExecIds.includes(String(e.id)) ? 'checked' : ''; 
+        return `<label class="multi-select-item"><input type="checkbox" value="${e.id}" data-name="${escapeHtml(e.name)}" ${isChecked} onchange="updateMultiSelectDisplay('exec_dropdown', 'exec_disp')"><span>${escapeHtml(e.name)}</span></label>`; 
+      }).join('');
+
+      let statusColor = '#64748b'; if(item.status === 'مكتملة') statusColor = '#16a34a'; else if(item.status === 'قيد التنفيذ') statusColor = '#eab308';
+
+      container.innerHTML = `
+      <article class="card mode-view" id="mainCard">
+        <div class="card-head">
+          <div class="topline">
+            <div style="display:flex; gap:8px;">
+              <span class="badge" id="lbl_no">${escapeHtml(item.initiativeNo || 'بدون رقم')}</span>
+              <span class="badge" style="background:${statusColor};">${escapeHtml(item.status || 'لم تبدأ')}</span>
+            </div>
+            <input type="hidden" id="f_no" value="${escapeHtml(item.initiativeNo)}" />
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn-review" style="background:#4f46e5;" onclick="askSmartAdvisor()">🤖 المستشار الذكي</button>
+              
+              <input type="hidden" id="f_plan_file" value="${escapeHtml(item.plan3FeetFile)}" />
+              <input type="file" id="file3feet" class="hidden" accept=".xlsx, .xls" onchange="upload3FeetPlan(event)" />
+              <button type="button" class="btn-review" style="background:#0284c7;" id="btn3feet" onclick="download3FeetPlan()">3feet plan 📊</button>
+
+              ${editBtnHtml}
+              <button type="button" class="btn-review btn-save-mode hidden" id="btnSave" onclick="saveData()">حفظ التعديلات 💾</button>
+              <button type="button" class="btn-review btn-cancel-mode hidden" id="btnCancel" onclick="location.reload()">إلغاء ❌</button>
+            </div>
+          </div>
+          <h2><textarea id="f_name" class="card-control text" rows="1" disabled>${escapeHtml(item.initiativeName)}</textarea></h2>
+          
+          <div class="meta">
+            <div class="mini"><span>الخطة الزمنية</span><b><textarea id="f_time" class="card-control" rows="1" disabled>${escapeHtml(item.timeline)}</textarea></b></div>
+            <div class="mini"><span>نسبة التنفيذ</span><b><textarea id="f_pct" class="card-control" rows="1" disabled>${Math.round(pct)}%</textarea></b><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div>
+            
+            <div class="mini" style="overflow: visible; z-index:11;"><span>الجهة المنفذة</span><b>
+              <textarea id="f_exec_view" class="card-control text-view togglable" rows="1" disabled>${escapeHtml(execNamesDisplay)}</textarea>
+              <div class="multi-select-container edit-input" id="f_exec_edit_wrap">
+                <div class="multi-select-display" onclick="toggleMultiSelect('exec_dropdown')" id="exec_disp">${escapeHtml(execNamesDisplay) || 'اختر الجهة...'}</div>
+                <div class="multi-select-dropdown" id="exec_dropdown">${checkBoxesHtml}</div>
+              </div>
+            </b></div>
+            <div class="mini"><span>الجهة المساندة</span><b><textarea id="f_supp" class="card-control text" rows="1" disabled>${escapeHtml(item.supportingEntity)}</textarea></b></div>
+            
+            <div class="mini"><span>الموازنة التقديرية</span><b><textarea id="f_budg" class="card-control" rows="1" disabled>${escapeHtml(item.estimatedBudget)}</textarea></b></div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="section"><div class="section-title">وصف المبادرة</div><div class="text"><textarea id="f_desc" class="card-control" rows="1" disabled>${escapeHtml(item.description)}</textarea></div></div>
+
+          <div class="section grid-info grid-2col" style="background:transparent; border:none; padding:0;">
+            <div class="info" style="border:none; padding:0; background:transparent;">
+              <div class="section-title">أهداف المبادرة</div>
+              <ul class="list" id="goals_list">
+                ${item.goals.length && item.goals[0] !== '' ? item.goals.map(g=>`<li><div style="display:flex;gap:6px;"><textarea class="card-control goal-item text" rows="1" disabled>${escapeHtml(g)}</textarea><button type="button" class="btn-circle btn-remove-item" onclick="confirmRemoveRow(this, false)">-</button></div></li>`).join('') : ''}
+              </ul>
+              ${(!item.goals.length || item.goals[0] === '') ? `<div class="empty" id="empty_goals">لم تسجل أهداف</div>` : ''}
+              <button type="button" class="btn-circle btn-add-item" onclick="addListRow('goals_list', 'goal-item', 'empty_goals')">+</button>
+            </div>
+            <div class="info" style="border:none; padding:0; background:transparent;">
+              <div class="section-title">المؤشرات الرئيسية</div>
+              <ul class="list" id="inds_list">
+                ${item.indicators.length && item.indicators[0] !== '' ? item.indicators.map(n=>`<li><div style="display:flex;gap:6px;"><textarea class="card-control ind-item text" rows="1" disabled>${escapeHtml(n)}</textarea><button type="button" class="btn-circle btn-remove-item" onclick="confirmRemoveRow(this, false)">-</button></div></li>`).join('') : ''}
+              </ul>
+              ${(!item.indicators.length || item.indicators[0] === '') ? `<div class="empty" id="empty_inds">لم تسجل مؤشرات</div>` : ''}
+              <button type="button" class="btn-circle btn-add-item" onclick="addListRow('inds_list', 'ind-item', 'empty_inds')">+</button>
+            </div>
+          </div>
+
+          <div class="section grid-info grid-4col">
+            <div class="info"><span>المديرية / الدائرة المسؤولة عن المبادرة</span><b><textarea id="f_dept" class="card-control" rows="1" disabled>${escapeHtml(item.responsibleDepartment)}</textarea></b></div>
+            <div class="info"><span>برنامج الاستراتيجية الصناعية 2040</span><b>
+              <textarea id="f_prog" class="card-control text-view togglable" rows="1" disabled>${escapeHtml(item.programName)}</textarea>
+              <select id="f_prog_edit" class="card-control edit-input">
+                <option value="">تحديد البرنامج...</option>
+                ${PROGRAM_OPTIONS.map(p => `<option value="${escapeHtml(p)}" ${item.programName === p ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
+              </select>
+            </b></div>
+            <div class="info"><span>ارتباط المبادرة ببرامج الخطة الخمسية</span><b><textarea id="f_fyp" class="card-control" rows="1" disabled>${escapeHtml(item.fiveYearPrograms)}</textarea></b></div>
+            <div class="info"><span>ارتباط المبادرة بمؤشرات الخطة الخمسية</span><b><textarea id="f_fyi" class="card-control" rows="1" disabled>${escapeHtml(item.fiveYearIndicators)}</textarea></b></div>
+
+            <div class="info"><span>تاريخ البدء</span><b>
+              <textarea id="f_start" class="card-control text-view togglable" rows="1" disabled>${escapeHtml(item.startDate)}</textarea>
+              <input type="date" id="f_start_edit" class="card-control edit-input" value="${escapeHtml(item.startDate)}" />
+            </b></div>
+            <div class="info"><span>تاريخ الانتهاء</span><b>
+              <textarea id="f_end" class="card-control text-view togglable" rows="1" disabled>${escapeHtml(item.endDate)}</textarea>
+              <input type="date" id="f_end_edit" class="card-control edit-input" value="${escapeHtml(item.endDate)}" />
+            </b></div>
+            <div class="info"><span>المبلغ المتبقي</span><b><textarea id="f_rem" class="card-control" rows="1" disabled>${escapeHtml(item.remainingAmount)}</textarea></b></div>
+            <div class="info"><span>المسؤول عن المتابعة</span><b><textarea id="f_fum" class="card-control" rows="1" disabled>${escapeHtml(item.followUpManager)}</textarea></b></div>
+          </div>
+
+          <div class="section grid-info grid-3col">
+            <div class="info"><span>مسؤول تنفيذ المبادرة</span><b><textarea id="f_exm" class="card-control" rows="1" disabled>${escapeHtml(item.executionManager)}</textarea></b></div>
+            <div class="info"><span>رقم الهاتف</span><b><textarea id="f_phone" class="card-control" rows="1" disabled>${escapeHtml(item.phone)}</textarea></b></div>
+            <div class="info"><span>البريد الاليكتروني</span><b><textarea id="f_email" class="card-control" rows="1" disabled>${escapeHtml(item.email)}</textarea></b></div>
+          </div>
+
+          <div class="section" style="margin-top: 30px; border-top: 2px dashed var(--line); padding-top: 20px;">
+            <div class="section-title">خطة العمل / خطوات التنفيذ</div>
+            <table id="tbl_plan">
+              <thead>
+                <tr>
+                  <th class="num">#</th>
+                  <th>الإجراء المعتمد</th>
+                  <th style="width:100px;">تاريخ البدء</th>
+                  <th style="width:100px;">تاريخ الانتهاء</th>
+                  <th style="width:70px;">الوزن %</th>
+                  <th style="width:100px;">الموقف الحالي</th>
+                  <th style="width:50px; text-align:center;">مستند</th>
+                  <th class="act-cell-remove">إزالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${item.actionPlan.length ? item.actionPlan.map((r, idx) => `
+                <tr class="action-row">
+                  <td class="num"><textarea class="card-control act-no" rows="1" style="text-align:center" disabled>${escapeHtml(r.no)}</textarea></td>
+                  <td><textarea class="card-control act-proc text" rows="1" oninput="autoResize(this)" disabled>${escapeHtml(r.procedure)}</textarea></td>
+                  <td>
+                    <textarea class="card-control text-view togglable" rows="1" disabled>${escapeHtml(r.startDate)}</textarea>
+                    <input type="date" class="card-control act-start edit-input" value="${escapeHtml(r.startDate)}" />
+                  </td>
+                  <td>
+                    <textarea class="card-control text-view togglable" rows="1" disabled>${escapeHtml(r.endDate)}</textarea>
+                    <input type="date" class="card-control act-end edit-input" value="${escapeHtml(r.endDate)}" />
+                  </td>
+                  <td>
+                    <textarea class="card-control text-view togglable" rows="1" style="text-align:center;" disabled>${escapeHtml(r.weight)}</textarea>
+                    <input type="number" min="0" max="100" class="card-control act-weight edit-input" value="${r.weight || 0}" style="text-align:center;" />
+                  </td>
+                  <td>
+                    <textarea class="card-control text-view togglable" rows="1" disabled>${escapeHtml(r.status)}</textarea>
+                    <select class="card-control act-stat edit-input" onchange="handleStatusChange(this, '${idx}')">
+                      <option value="لم تبدأ" ${r.status === 'لم تبدأ' ? 'selected' : ''}>لم تبدأ</option>
+                      <option value="قيد التنفيذ" ${r.status === 'قيد التنفيذ' ? 'selected' : ''}>قيد التنفيذ</option>
+                      <option value="مكتملة" ${r.status === 'مكتملة' ? 'selected' : ''}>مكتملة</option>
+                    </select>
+                  </td>
+                  <td style="text-align:center; vertical-align:middle;">
+                    <input type="hidden" class="step-doc-path" value="${escapeHtml(r.docPath || '')}" id="doc_path_${idx}" />
+                    <a class="text-view togglable" href="${r.docPath ? 'https://ictyhtprnmfewjrlrctg.supabase.co/storage/v1/object/public/step_documents/' + r.docPath + '?download=' : '#'}" download style="text-decoration:none; display:${r.docPath ? 'inline-block' : 'none'}; font-size:18px;" title="تحميل المستند">📄</a>
+                    <button type="button" class="btn-review step-doc-btn edit-input" style="background:${r.docPath ? '#16a34a' : 'transparent'}; border:1px solid var(--line); color:${r.docPath ? '#fff' : 'var(--muted)'}; padding:6px; font-size:14px; margin: 0 auto;" onclick="document.getElementById('file_step_${idx}').click()" title="${r.docPath ? 'استبدال المستند' : 'إرفاق مستند'}">📄</button>
+                    <input type="file" id="file_step_${idx}" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx" onchange="uploadStepDoc(event, '${idx}')" />
+                  </td>
+                  <td class="act-cell-remove"><button type="button" class="btn-circle btn-remove-item" onclick="confirmRemoveRow(this, true)">-</button></td>
+                </tr>`).join('') : `<tr id="empty_tbl"><td colspan="8" class="empty">لا توجد خطوات تنفيذية مدونة</td></tr>`}
+              </tbody>
+            </table>
+            <button type="button" class="btn-circle btn-add-item" onclick="addTableRow('empty_tbl')">+</button>
+          </div>
+
+          <div class="section"><div class="section-title">الموقف التنفيذي</div><div class="text"><textarea id="f_execpos" class="card-control" rows="1" disabled>${escapeHtml(item.executivePosition)}</textarea></div></div>
+          
+          <div class="section"><div class="section-title" style="color:var(--brand2)">التحديات / المعوقات</div><div class="text"><textarea id="f_chal" class="card-control" rows="1" disabled>${escapeHtml(item.challenges)}</textarea></div></div>
+          <div class="section"><div class="section-title">آخر تحديث</div><div class="text"><textarea id="f_lupd" class="card-control" rows="1" disabled>${escapeHtml(item.lastUpdate)}</textarea></div></div>
+          <div class="section"><div class="section-title">الملاحظات</div><div class="text"><textarea id="f_note" class="card-control" rows="1" disabled>${escapeHtml(item.notes)}</textarea></div></div>
+
+          <div style="font-size:12px; color:var(--muted); margin-top:20px; border-top:1px dashed var(--line); padding-top:10px; display:flex; justify-content:space-between">
+            <span>المُعدِّل الأخير: <b>${escapeHtml(item.lastEditor)}</b></span>
+            <span>بتاريخ: <b dir="ltr">${escapeHtml(item.lastEditDate)}</b></span>
+          </div>
+
+        </div>
+      </article>`;
+
+      initAutoResize();
+    }
+
+    function handleStatusChange(selectEl, rowIdx) {
+      if (selectEl.value === 'قيد التنفيذ' || selectEl.value === 'لم تبدأ') {
+        document.getElementById(`doc_path_${rowIdx}`).value = "";
+        const tr = selectEl.closest('tr');
+        const viewLink = tr.querySelector('a.text-view');
+        if(viewLink) viewLink.style.display = 'none';
+        const btn = tr.querySelector('.step-doc-btn');
+        if(btn) {
+          btn.style.background = 'transparent';
+          btn.style.color = 'var(--muted)';
+          btn.title = 'إرفاق مستند';
+        }
+      }
+    }
+
+    function autoResize(el) { if(!el) return; el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }
+    function initAutoResize() { document.querySelectorAll('textarea.card-control').forEach(el => { autoResize(el); el.addEventListener('input', function() { autoResize(this); }); }); }
+
+    function enableEditMode() {
+      const card = document.getElementById(`mainCard`); card.classList.add('mode-edit'); 
+      document.getElementById(`btnEdit`).classList.add('hidden'); 
+      document.getElementById(`btnSave`).classList.remove('hidden'); 
+      document.getElementById(`btnCancel`).classList.remove('hidden');
+      const btn3f = document.getElementById(`btn3feet`);
+      if (btn3f) { btn3f.textContent = "تحديث 3feet plan 📁"; btn3f.style.background = "#0ea5e9"; btn3f.onclick = () => document.getElementById(`file3feet`).click(); }
+      setTimeout(() => { card.querySelectorAll('.card-control').forEach(input => { if(!input.classList.contains('act-no')) { input.removeAttribute('disabled'); } autoResize(input); }); }, 10);
+    }
+
+    function addListRow(containerId, inputClass, emptyId) {
+      const emptyEl = document.getElementById(emptyId); if(emptyEl) emptyEl.remove();
+      const li = document.createElement('li'); li.innerHTML = `<div style="display:flex;gap:6px;"><textarea class="card-control ${inputClass} text" rows="1" oninput="autoResize(this)"></textarea><button type="button" class="btn-circle btn-remove-item" onclick="confirmRemoveRow(this, false)">-</button></div>`;
+      document.getElementById(containerId).appendChild(li); li.querySelector('textarea').focus();
+    }
+    
+    function addTableRow(emptyId) {
+      const emptyEl = document.getElementById(emptyId); if(emptyEl) emptyEl.remove();
+      const tbody = document.getElementById(`tbl_plan`).querySelector('tbody'); const tr = document.createElement('tr'); tr.className = 'action-row';
+      const newIdx = Date.now();
+      tr.innerHTML = `
+        <td class="num"><textarea class="card-control act-no" rows="1" style="text-align:center" disabled></textarea></td>
+        <td><textarea class="card-control act-proc text" rows="1" oninput="autoResize(this)"></textarea></td>
+        <td>
+          <textarea class="card-control text-view togglable" rows="1" disabled></textarea>
+          <input type="date" class="card-control act-start edit-input" style="display:block" />
+        </td>
+        <td>
+          <textarea class="card-control text-view togglable" rows="1" disabled></textarea>
+          <input type="date" class="card-control act-end edit-input" style="display:block" />
+        </td>
+        <td>
+          <textarea class="card-control text-view togglable" rows="1" style="text-align:center;" disabled>0</textarea>
+          <input type="number" min="0" max="100" class="card-control act-weight edit-input" style="text-align:center; display:block;" value="0" />
+        </td>
+        <td>
+          <textarea class="card-control text-view togglable" rows="1" disabled>لم تبدأ</textarea>
+          <select class="card-control act-stat edit-input" style="display:block;" onchange="handleStatusChange(this, '${newIdx}')">
+            <option value="لم تبدأ" selected>لم تبدأ</option>
+            <option value="قيد التنفيذ">قيد التنفيذ</option>
+            <option value="مكتملة">مكتملة</option>
+          </select>
+        </td>
+        <td style="text-align:center; vertical-align:middle;">
+          <input type="hidden" class="step-doc-path" id="doc_path_${newIdx}" value="" />
+          <button type="button" class="btn-review step-doc-btn edit-input" style="background:transparent; border:1px solid var(--line); color:var(--muted); padding:6px; font-size:14px; margin: 0 auto; display:block;" onclick="document.getElementById('file_step_${newIdx}').click()" title="إرفاق مستند">📄</button>
+          <input type="file" id="file_step_${newIdx}" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xlsx" onchange="uploadStepDoc(event, '${newIdx}')" />
+        </td>
+        <td class="act-cell-remove"><button type="button" class="btn-circle btn-remove-item" onclick="confirmRemoveRow(this, true)">-</button></td>
+      `;
+      tbody.appendChild(tr); updateTableNumbers(tbody); tr.querySelector('.act-proc').focus();
+    }
+
+    function confirmRemoveRow(btn, isTable) {
+      if(confirm('هل أنت متأكد من الحذف؟')) {
+        const target = btn.closest(isTable ? 'tr' : 'li');
+        const tbody = isTable ? target.closest('tbody') : null;
+        target.remove(); if(isTable && tbody) updateTableNumbers(tbody);
+      }
+    }
+    function updateTableNumbers(tbody) { const rows = tbody.querySelectorAll('.action-row'); rows.forEach((row, index) => { const noInput = row.querySelector('.act-no'); if(noInput) noInput.value = index + 1; }); }
+
+    function toggleMultiSelect(id) { document.getElementById(id).classList.toggle('show'); }
+    function updateMultiSelectDisplay(dropdownId, dispId) { const checkboxes = document.querySelectorAll(`#${dropdownId} input[type="checkbox"]:checked`); const vals = Array.from(checkboxes).map(cb => cb.value); document.getElementById(dispId).textContent = vals.length > 0 ? vals.join('، ') : 'اختر الجهات...'; }
+    document.addEventListener('click', e => { if(!e.target.closest('.multi-select-container')) { document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show')); } });
+
+    /* تفاصيل دوال الجهات المنفذة */
+    function openManageEntitiesModal() { renderEntityTable(); document.getElementById('entityModal').classList.add('show'); }
+    function closeEntityModal() { document.getElementById('entityModal').classList.remove('show'); }
+    
+    function renderEntityTable() {
+      const tbody = document.getElementById('entityTableBody');
+      tbody.innerHTML = entitiesList.map(e => `
+        <tr><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.name)}</td><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.contact || '—')}</td><td style="padding:8px; border-bottom:1px solid var(--line);"><span dir="ltr">${escapeHtml(e.phone || '—')}</span></td><td style="padding:8px; border-bottom:1px solid var(--line);">${escapeHtml(e.email || '—')}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--line); text-align:center"><button class="btn-review btn-edit-mode" style="background:#eab308; color:#000; padding:4px 10px;" onclick="editEntityForm('${e.id || ''}', '${escapeHtml(e.name)}', '${escapeHtml(e.contact || '')}', '${escapeHtml(e.phone || '')}', '${escapeHtml(e.email || '')}')">تعديل</button></td></tr>
+      `).join('');
+    }
+    function editEntityForm(id, name, contact, phone, email) { document.getElementById('ent_rowIndex').value = id; document.getElementById('ent_name').value = name; document.getElementById('ent_contact').value = contact; document.getElementById('ent_phone').value = phone; document.getElementById('ent_email').value = email; }
+    function resetEntityForm() { document.getElementById('ent_rowIndex').value = ""; document.getElementById('ent_name').value = ""; document.getElementById('ent_contact').value = ""; document.getElementById('ent_phone').value = ""; document.getElementById('ent_email').value = ""; }
+    
+    async function saveEntity() {
+       const id = document.getElementById('ent_rowIndex').value;
+       const name = document.getElementById('ent_name').value.trim();
+       const contact = document.getElementById('ent_contact').value.trim();
+       const phone = document.getElementById('ent_phone').value.trim();
+       const email = document.getElementById('ent_email').value.trim();
+       if(!name) { showToast("اسم الجهة مطلوب", "error"); return; }
+       showToast("⏳ جاري الحفظ...");
+       const payload = { name, contact, phone, email };
+       let result;
+       
+       if(id) { result = await window.supabaseClient.from('entities').update(payload).eq('id', id); } 
+       else { result = await window.supabaseClient.from('entities').insert([payload]); }
+
+       if(result.error) { 
+           showToast("فشل حفظ البيانات: " + result.error.message, "error"); 
+       } else { 
+           showToast("✅ تم حفظ الجهة بنجاح", "success"); 
+           resetEntityForm(); 
+           
+           const { data: updatedEntities } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
+           if(updatedEntities) {
+               entitiesList = updatedEntities; 
+               renderEntityTable(); 
+               if (typeof renderEntityOptions === 'function') { renderEntityOptions(document.getElementById('entitySearchBox').value || ''); }
+               loadInitiativeData(currentItem.id);
+           }
+       }
+    }
+
+    async function uploadStepDoc(event, rowIndexId) {
+      const file = event.target.files[0]; if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { showToast("حجم الملف يتجاوز 5 ميجابايت!", "error"); event.target.value = ''; return; }
+      showToast("⏳ جاري رفع المستند..."); const btn = event.target.previousElementSibling; btn.style.color = "orange";
+      try {
+        const fileName = `step_doc_${currentItem.id}_${Date.now()}.${file.name.split('.').pop()}`;
+        const { data, error } = await window.supabaseClient.storage.from('step_documents').upload(fileName, file, { upsert: true });
+        if (error) throw error;
+        document.getElementById(`doc_path_${rowIndexId}`).value = data.path;
+        btn.style.background = "#16a34a"; btn.style.color = "#fff"; btn.title = "تم إرفاق المستند بنجاح";
+        showToast("✅ تم رفع المستند بنجاح!", "success");
+      } catch (err) { btn.style.color = "var(--muted)"; showToast("❌ خطأ: " + err.message, "error"); }
+    }
+
+    async function upload3FeetPlan(event) {
+      const file = event.target.files[0]; if (!file) return;
+      showToast("⏳ جاري الرفع...", "success"); const btn = document.getElementById(`btn3feet`); btn.textContent = "جاري الرفع... ⏳"; btn.disabled = true;
+      try {
+        const fileName = `plan_${currentItem.id}_${Date.now()}.${file.name.split('.').pop()}`;
+        const { data, error } = await window.supabaseClient.storage.from('3feet_plans').upload(fileName, file, { upsert: true });
+        if (error) throw error;
+        document.getElementById(`f_plan_file`).value = data.path;
+        showToast("✅ تم رفع الملف! اضغط حفظ التعديلات.", "success");
+        btn.textContent = "تم الرفع ✅"; btn.style.background = "#16a34a"; btn.disabled = false;
+      } catch (err) { showToast("❌ خطأ: " + err.message, "error"); btn.textContent = "تحديث 3feet plan 📁"; btn.disabled = false; }
+    }
+
+    async function download3FeetPlan() {
+       const path = document.getElementById(`f_plan_file`).value;
+       if (!path || path === "—") { showToast("لا يوجد ملف مرفق.", "error"); return; }
+       showToast("⏳ جاري التحميل...", "success");
+       try {
+           const { data, error } = await window.supabaseClient.storage.from('3feet_plans').download(path);
+           if (error) throw error;
+           const url = URL.createObjectURL(data); const a = document.createElement('a'); a.href = url; a.download = path.split('/').pop(); document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+           showToast("✅ تم تحميل الملف بنجاح!", "success");
+       } catch(e) { showToast("❌ تعذر التحميل.", "error"); }
+    }
+
+    async function saveData() {
+      document.getElementById(`btnSave`).disabled = true; showToast("⏳ جاري الحفظ...");
+      try {
+        const goalsArr = Array.from(document.querySelectorAll('.goal-item')).map(i => i.value.trim()).filter(Boolean);
+        const indArr = Array.from(document.querySelectorAll('.ind-item')).map(i => i.value.trim()).filter(Boolean);
+        let planArr = [], totalWeight = 0, completedWeight = 0, hasValidationError = false;
+        
+        let totalSteps = 0, completedSteps = 0, notStartedSteps = 0;
+
+        document.querySelectorAll('.action-row').forEach((tr, index) => {
+          let no = tr.querySelector('.act-no').value.trim(), procedure = tr.querySelector('.act-proc').value.trim();
+          let startDate = tr.querySelector('.act-start').value, endDate = tr.querySelector('.act-end').value;
+          let weight = parseFloat(tr.querySelector('.act-weight').value) || 0, status = tr.querySelector('.act-stat').value, docPath = tr.querySelector('.step-doc-path').value;
+          
+          if (procedure !== "" || status !== "" || weight > 0) {
+            totalWeight += weight;
+            totalSteps++;
+            if(status === 'مكتملة') completedSteps++;
+            else if(status === 'لم تبدأ') notStartedSteps++;
+            
+            if (status === 'مكتملة') {
+              if (!docPath) { alert(`الخطوة (${no || index + 1}) تم تعيينها كـ مكتملة بلا مستند! يرجى إرفاق المستند الداعم.`); hasValidationError = true; }
+              completedWeight += weight;
+            }
+            planArr.push({ no, procedure, startDate, endDate, weight, status, docPath });
+          }
+        });
+        
+        if (hasValidationError) { 
+           document.getElementById(`btnSave`).disabled = false; 
+           showToast("❌ يرجى إرفاق المستندات للخطوات المكتملة", "error");
+           return; 
+        }
+        if (planArr.length > 0 && totalWeight !== 100) { 
+           alert(`تحذير: مجموع الأوزان هو ${totalWeight} وليس 100 كما ينبغي.`); 
+           document.getElementById(`btnSave`).disabled = false;
+           showToast("❌ يرجى التحقق من أوزان الخطوات", "error"); 
+           return; 
+        }
+
+        let autoStatus = currentItem.status;
+        if(totalSteps > 0) {
+           if(completedSteps === totalSteps) autoStatus = "مكتملة";
+           else if(notStartedSteps === totalSteps) autoStatus = "لم تبدأ";
+           else autoStatus = "قيد التنفيذ";
+        }
+
+        const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+        const getEditVal = (idBase) => document.getElementById(idBase + '_edit') ? document.getElementById(idBase + '_edit').value : getVal(idBase);
+        const executingEntityVal = Array.from(document.querySelectorAll('#exec_dropdown input[type="checkbox"]:checked')).map(cb => cb.value).join('، ');
+
+        const payload = {
+          initiative_name: getVal(`f_name`), timeline: getVal(`f_time`),
+          completion_percentage: planArr.length > 0 ? completedWeight : 0, 
+          estimated_budget: getVal(`f_budg`), remaining_amount: getVal(`f_rem`), description: getVal(`f_desc`),
+          executing_entity: executingEntityVal, supporting_entity: getVal(`f_supp`), responsible_directorate: getVal(`f_dept`),
+          program_name: getEditVal('f_prog'), five_year_programs: getVal(`f_fyp`), five_year_indicators: getVal(`f_fyi`),
+          start_date: getEditVal('f_start') || null, end_date: getEditVal('f_end') || null, 
+          status: autoStatus, 
+          follow_up_responsible: getVal(`f_fum`), executive_status: getVal(`f_execpos`), challenges: getVal(`f_chal`),
+          latest_update: getVal(`f_lupd`), notes: getVal(`f_note`), implementation_manager: getVal(`f_exm`),
+          phone_number: getVal(`f_phone`), email: getVal(`f_email`),
+          last_modified_by: currentUser.name, last_modified_date: new Date().toISOString(),
+          goals: goalsArr.join(' | '), kpis: indArr.join(' | '), action_plan: JSON.stringify(planArr), plan_3feet_file: getVal(`f_plan_file`)
+        };
+        
+        const { error } = await window.supabaseClient.from('initiatives').update(payload).eq('id', currentItem.id);
+        if (error) throw error;
+        showToast("✅ تم الحفظ بنجاح!", "success"); setTimeout(() => location.reload(), 1000);
+      } catch (e) { showToast("❌ فشل: " + e.message, "error"); document.getElementById(`btnSave`).disabled = false; }
+    }
+
+    async function askSmartAdvisor() {
+      document.getElementById('aiModal').classList.add('show'); document.getElementById('aiLoading').style.display = 'block'; document.getElementById('aiResponseContent').style.display = 'none';
+      const payload = { ...currentItem, executingEntity: getEntityNames(currentItem.executingEntity) };
+      const { data: res, error } = await window.supabaseClient.functions.invoke('get-card-ai-advice', { body: payload });
+      document.getElementById('aiLoading').style.display = 'none'; document.getElementById('aiResponseContent').style.display = 'block';
+      if(!error && res.success) { document.getElementById('aiResponseContent').innerHTML = res.advice; document.getElementById('btnDownloadCardWord').style.display = 'inline-block'; } 
+      else { document.getElementById('aiResponseContent').innerHTML = `<div style="color:red">❌ فشل: ${error?.message}</div>`; }
+    }
+
+    function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
+    async function sendChatMessage() {
+      const input = document.getElementById('chatInput'); const msg = input.value.trim(); if(!msg) return;
+      const chatBody = document.getElementById('chatBody'); chatBody.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
+      chatHistoryLog.push({ role: 'user', parts: [{ text: msg }] }); input.value = '';
+      const loadingId = 'loading-' + Date.now(); chatBody.innerHTML += `<div class="chat-msg ai" id="${loadingId}">⏳...</div>`; chatBody.scrollTop = chatBody.scrollHeight;
+      
+      const contextData = `المبادرة: ${currentItem.initiativeName}، النسبة: ${currentItem.completionPercent}%، المنفذ: ${getEntityNames(currentItem.executingEntity)}، التحديات: ${currentItem.challenges}`;
+      const { data: res, error } = await window.supabaseClient.functions.invoke('chat-bot', { body: { context: contextData, history: chatHistoryLog.slice(-5) } });
+      
+      document.getElementById(loadingId).remove();
+      if(!error && res.success) { chatBody.innerHTML += `<div class="chat-msg ai">${res.reply.replace(/\n/g, '<br>')}</div>`; chatHistoryLog.push({ role: 'model', parts: [{ text: res.reply }] }); }
+      else { chatBody.innerHTML += `<div class="chat-msg ai" style="color:red">❌ فشل الاتصال.</div>`; chatHistoryLog.pop(); }
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+    
+    function downloadModalAsWord(elementId, baseFilename) {
+      const content = document.getElementById(elementId).innerHTML;
+      const htmlString = `<html dir="rtl"><head><meta charset="utf-8"><style>body{font-family:Tahoma; direction:rtl; text-align:right;} h3{color:#0b4f6c;}</style></head><body>${content}</body></html>`;
+      const blob = new Blob(['\ufeff' + htmlString], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = baseFilename + '.doc'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
