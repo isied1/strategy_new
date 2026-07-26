@@ -73,7 +73,7 @@
   <header class="header-bar">
     <div style="display:flex; align-items:center; gap:20px;">
       <h1>الاستراتيجية الصناعية 2040 - الصلاحيات</h1>
-      <button class="btn-home" onclick="goToDashboard()">🏠 الرئيسية</button>
+      <button class="btn-home" onclick="goToDashboard()">الرئيسية</button>
     </div>
     <div class="header-user">
       <span id="displayUserName" style="padding: 4px 8px; border-radius: 8px;"></span>
@@ -99,7 +99,7 @@
           </tr>
         </thead>
         <tbody id="usersBody">
-          <tr><td colspan="5" class="loading-div">⏳ جاري الاتصال بخادم سوبابيس وجلب سجل الصلاحيات الحالي...</td></tr>
+          <tr><td colspan="5" class="loading-div">جاري الاتصال ...</td></tr>
         </tbody>
       </table>
     </div>
@@ -110,13 +110,13 @@
       <h2 style="margin-top:0; color:var(--brand2); font-size: 20px;" id="modalTitle">إدارة الصلاحيات</h2>
       
       <div class="form-grid">
-        <div class="form-group"><label>الاسم الكامل للمستخدم</label><input type="text" id="u_name" placeholder="أدخل الاسم الثلاثي المعتمد" /></div>
+        <div class="form-group"><label>الاسم الكامل للمستخدم</label><input type="text" id="u_name" placeholder="أدخل الاسم" /></div>
         <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="u_email" placeholder="username@domain.com" /></div>
-        <div class="form-group"><label>الرتبة الممنوحة (الدور)</label>
+        <div class="form-group"><label>الصلاحية الممنوحة</label>
           <select id="u_role">
-            <option value="viewer">مشاهدة واطلاع فقط (Viewer)</option>
-            <option value="editor">صلاحية تعديل وحفظ البيانات (Editor)</option>
-            <option value="admin">مدير النظام كامل الصلاحيات (Admin)</option>
+            <option value="viewer">مشاهدة فقط (Viewer)</option>
+            <option value="editor">تعديل البيانات (Editor)</option>
+            <option value="admin">مدير النظام (Admin)</option>
           </select>
         </div>
       </div>
@@ -154,16 +154,14 @@
     let globalEntities = {}; 
     let allUsers = [];
 
-    // التحقق من الجلسة والصلاحيات عند فتح الصفحة
     window.onload = async function() {
       try {
         const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
         if (!session) { window.location.href = 'index.html'; return; }
 
-        // التحقق من أن المستخدم لديه صلاحية "admin"
         const { data: profile } = await window.supabaseClient.from('profiles').select('*').eq('email', session.user.email).single();
         if (!profile || String(profile.role).toLowerCase().trim() !== 'admin') {
-          alert('عذراً، هذه الصفحة مخصصة لمدراء النظام فقط.');
+          alert('عذراً، هذه الصفحة لمدير النظام فقط.');
           window.location.href = 'dashboard.html';
           return;
         }
@@ -185,18 +183,15 @@
     function showToast(msg) { const t = document.getElementById("toast"); t.innerText = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
     function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
 
-    // جلب البيانات من الجداول
     async function fetchAdminData() {
-      document.getElementById("usersBody").innerHTML = '<tr><td colspan="5" class="loading-div">⏳ جاري الاتصال بخادم سوبابيس وجلب سجل الصلاحيات الحالي...</td></tr>';
+      document.getElementById("usersBody").innerHTML = '<tr><td colspan="5" class="loading-div">جاري الاتصال ...</td></tr>';
       
-      // جلب جميع المستخدمين من جدول profiles
       const { data: usersData, error: usersError } = await window.supabaseClient.from('profiles').select('*').order('created_at', { ascending: false });
-      if (usersError) { alert("خطأ في جلب بيانات المستخدمين: " + usersError.message); return; }
+      if (usersError) { alert("خطأ في تحميل بيانات المستخدمين: " + usersError.message); return; }
       allUsers = usersData || [];
 
-      // جلب المبادرات والجهات لتجميع القوائم
       const { data: initData, error: initError } = await window.supabaseClient.from('initiatives').select('initiative_number, initiative_name, executing_entity');
-      if (initError) { alert("خطأ في جلب المبادرات: " + initError.message); return; }
+      if (initError) { alert("خطأ في تحميل المبادرات: " + initError.message); return; }
 
       globalEntities = {};
       (initData || []).forEach(item => {
@@ -215,8 +210,7 @@
       if(allUsers.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--muted)">لا يوجد أي مستخدمين مسجلين حالياً.</td></tr>'; return; }
       
       allUsers.forEach((u, index) => {
-        // مطابقة الحقول مع جدول profiles الجديد (allowed_initiatives بدلا من allowedInitiatives)
-        let allowedDisplay = u.allowed_initiatives ? u.allowed_initiatives : "وصول كامل لكافة المبادرات بالنظام";
+        let allowedDisplay = u.allowed_initiatives ? u.allowed_initiatives : "وصول كامل لكافة المبادرات";
         if(allowedDisplay.length > 55) allowedDisplay = allowedDisplay.substring(0, 55) + "...";
         let roleClass = u.role === 'admin' ? 'admin' : (u.role === 'editor' ? 'editor' : 'viewer');
         let roleText = u.role === 'admin' ? 'مدير نظام' : (u.role === 'editor' ? 'صلاحية تعديل' : 'صلاحية مشاهدة');
@@ -242,7 +236,6 @@
       document.getElementById("u_name").value = u.name; 
       document.getElementById("u_email").value = u.email; 
       document.getElementById("u_role").value = u.role;
-      // منع تغيير الإيميل عند التعديل لأنه المعرف الرئيسي (Primary Key)
       document.getElementById("u_email").disabled = true; 
       document.getElementById("modalTitle").innerText = "إدارة الصلاحيات";
       let assignedArr = u.allowed_initiatives ? u.allowed_initiatives.split(",").map(s => s.trim()) : []; 
@@ -282,18 +275,15 @@
       else if (direction === 'to-right') { buildDualLists([]); }
     }
 
-      // ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
-    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; 
+    let lastActivityUpdate = 0;
 
-    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
       if (window.supabaseClient) {
           await window.supabaseClient.auth.signOut();
       }
       currentUser = null;
-      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
       window.location.href = 'index.html?timeout=1';
     }
 
@@ -308,27 +298,22 @@
       const now = Date.now();
       const lastActive = localStorage.getItem('last_activity_time');
 
-      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
       if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
          executeAutoLogout();
          return;
       }
 
-      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
       if (now - lastActivityUpdate > 3000) {
         localStorage.setItem('last_activity_time', now);
         lastActivityUpdate = now;
       }
     }
 
-    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
     ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
         document.addEventListener(event, resetActivityTimer, { passive: true });
     });
 
-    // الفحص الدوري
     setInterval(checkInactivity, 60000); 
-    // -----------------------------------------------------------------
 
       
     async function saveUser() {
@@ -351,7 +336,6 @@
         allowed_initiatives: allowedInitiativesIds 
       };
 
-      // استخدام upsert لإضافة مستخدم جديد أو تحديث الحالي (بناءً على الإيميل)
       const { data, error } = await window.supabaseClient.from('profiles').upsert(payload, { onConflict: 'email' });
 
       btn.disabled = false; btn.innerText = "حفظ وتطبيق الصلاحيات 💾";
