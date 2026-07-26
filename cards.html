@@ -82,19 +82,6 @@
     .empty{color:var(--muted);background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;text-align:center;font-size:12px}
     .hidden{display:none!important}
 
-    /* الشات بوت العائم */
-    .chat-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; border: none; }
-    .chat-window { position: fixed; bottom: 100px; left: 30px; width: 360px; max-width: 90vw; height: 500px; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s ease; border: 1px solid var(--line); overflow: hidden; }
-    .chat-window.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .chat-header { background: var(--brand2); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-    .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
-    .chat-msg.user { align-self: flex-start; background: var(--brand); color: #fff; border-bottom-right-radius: 2px; }
-    .chat-msg.ai { align-self: flex-end; background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 2px; }
-    .chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid var(--line); gap: 8px; }
-    .chat-input-area input { flex: 1; border: 1px solid var(--line); border-radius: 20px; padding: 10px 16px; outline: none; font-family: inherit; }
-    .chat-input-area button { background: var(--brand); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
-
     /* نافذة الجهات المنفذة */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
@@ -200,23 +187,6 @@
     <section id="cards" class="cards"></section>
   </main>
 
-  <button class="chat-fab" onclick="toggleChat()" title="تحدث مع المستشار الذكي">🤖</button>
-  <div class="chat-window" id="chatWindow">
-    <div class="chat-header">
-      <div style="display:flex; align-items:center; gap:8px;"><span>🤖</span> مساعد الاستراتيجية</div>
-      <button style="background:transparent; border:none; color:#fff; cursor:pointer; font-size:16px;" onclick="toggleChat()">✖</button>
-    </div>
-    <div class="chat-body" id="chatBody">
-      <div class="chat-msg ai">أهلاً بك! 👋 أنا المساعد الذكي للاستراتيجية. يمكنك سؤالي عن المبادرات المعروضة هنا.</div>
-    </div>
-    <div class="chat-input-area">
-      <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendChatMessage()" />
-      <button id="chatSendBtn" onclick="sendChatMessage()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg);"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      </button>
-    </div>
-  </div>
-
   <script>
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
@@ -228,7 +198,7 @@
       throw initErr;
     }
 
-    let entitiesList = []; let initiatives = []; let selectedEntity = ''; let currentUser = null; let chatHistoryLog = [];
+    let entitiesList = []; let initiatives = []; let selectedEntity = ''; let currentUser = null;
 
     const els = {
       cards: document.getElementById('cards'), searchInput: document.getElementById('searchInput'),
@@ -605,23 +575,6 @@
         slide.addTable(tblRows, { x: 0.2, y: 1.25, w: 4.7, colW: [0.8, 0.6, 3.0, 0.3], border: { pt: 0.5, color: "E2E8F0" }, fontSize: 9, valign: "middle", rtlMode: true, autoPage: false });
       });
       pptx.writeFile({ fileName: `المبادرات_${new Date().getTime()}.pptx` }).then(() => showToast("✅ تم التصدير بنجاح", "success")).catch(err => showToast("❌ خطأ: " + err, "error"));
-    }
-
-    /* دالة الشات بوت العائم للصفحة الرئيسية */
-    function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
-    async function sendChatMessage() {
-      const input = document.getElementById('chatInput'); const msg = input.value.trim(); if(!msg) return;
-      const chatBody = document.getElementById('chatBody'); chatBody.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
-      chatHistoryLog.push({ role: 'user', parts: [{ text: msg }] }); input.value = '';
-      const loadingId = 'loading-' + Date.now(); chatBody.innerHTML += `<div class="chat-msg ai" id="${loadingId}">⏳...</div>`; chatBody.scrollTop = chatBody.scrollHeight;
-      
-      let contextData = initiatives.map(item => `[رقم المبادرة: ${item.initiativeNo}] المبادرة: ${item.initiativeName}، النسبة: ${Math.round(pctNumber(item.completionPercent))}%، المنفذ: ${getEntityNames(item.executingEntity)}`).join('\n');
-      const { data: res, error } = await window.supabaseClient.functions.invoke('chat-bot', { body: { context: contextData, history: chatHistoryLog.slice(-5) } });
-      
-      document.getElementById(loadingId).remove();
-      if(!error && res.success) { chatBody.innerHTML += `<div class="chat-msg ai">${res.reply.replace(/\n/g, '<br>')}</div>`; chatHistoryLog.push({ role: 'model', parts: [{ text: res.reply }] }); }
-      else { chatBody.innerHTML += `<div class="chat-msg ai" style="color:red">❌ فشل الاتصال.</div>`; }
-      chatBody.scrollTop = chatBody.scrollHeight;
     }
   </script>
 </body>
