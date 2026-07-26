@@ -71,7 +71,7 @@
       if (session) window.location.href = 'dashboard.html';
     };
 
-async function sendCode() {
+    async function sendCode() {
       const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
       if(!identifier) { showToast("يرجى إدخال اسم المستخدم أو الإيميل.", "error"); return; }
       
@@ -80,10 +80,25 @@ async function sendCode() {
       
       currentAuthEmail = identifier.includes('@') ? identifier : identifier + DEFAULT_DOMAIN;
 
+      // 🌟 التعديل الأهم: التحقق من وجود الإيميل في جدول الصلاحيات قبل طلب إرسال الرمز
+      const { data: profileCheck, error: profileError } = await window.supabaseClient
+         .from('profiles')
+         .select('email')
+         .eq('email', currentAuthEmail)
+         .single();
+
+      if (!profileCheck) {
+         // إذا لم يكن الإيميل مسجلاً، نوقف العملية ولا نرسل الرمز
+         btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
+         showToast("عذراً، هذا الحساب غير مصرح له بالدخول.", "error");
+         return;
+      }
+
+      // إذا كان مسجلاً، نطلب من Supabase إرسال الرمز
       const { data, error } = await window.supabaseClient.auth.signInWithOtp({
         email: currentAuthEmail,
-        // 🌟 التعديل الأول: السماح بإنشاء حساب مبدئي ليتمكن من استلام الرمز
-        options: { shouldCreateUser: true } 
+        // تم تغييرها إلى false لضمان عدم إنشاء حسابات غير مصرح بها في نظام الـ Auth الخاص بسوبابيس
+        options: { shouldCreateUser: false } 
       });
 
       btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
@@ -106,23 +121,10 @@ async function sendCode() {
 
       btn.disabled = false; btn.textContent = "تحقق ودخول";
 
-      if (error) { showToast("الرمز خاطئ.", "error"); } 
-      else {
-        // 🌟 التعديل الثاني (بوابة التفتيش الأمنية): التحقق هل هذا الإيميل مضاف من قبل الإدارة؟
-        const { data: profileCheck } = await window.supabaseClient
-           .from('profiles')
-           .select('email')
-           .eq('email', data.user.email)
-           .single();
-
-        if (!profileCheck) {
-           // إذا لم يكن موجوداً في جدول الإدارة، يتم تسجيل خروجه وطردة فوراً
-           await window.supabaseClient.auth.signOut();
-           showToast("عذراً، حسابك غير مصرح له بالدخول. تواصل مع الإدارة.", "error");
-           return;
-        }
-
-        // إذا كان موجوداً، يسمح له بالدخول
+      if (error) { 
+        showToast("الرمز خاطئ.", "error"); 
+      } else {
+        // بما أننا تحققنا مسبقاً، نسمح له بالدخول فوراً
         localStorage.setItem('last_activity_time', Date.now());
         window.location.href = 'dashboard.html'; 
       }
