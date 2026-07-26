@@ -100,7 +100,6 @@
     .multi-select-item:hover { background: var(--soft); color: var(--brand2); font-weight: bold; }
     .multi-select-item input[type="checkbox"] { width: 16px; height: 16px; margin:0; }
 
-    /* نوافذ المستخدم (إدارة الجهات) */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content { background: #fff; border-radius: var(--radius); width: 850px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
@@ -164,10 +163,10 @@
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
     try {
-      if (typeof supabase === 'undefined') throw new Error('فشل تحميل مكتبة Supabase من الشبكة (CDN). تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة.');
+      if (typeof supabase === 'undefined') throw new Error('فشل تحميل البيانات، تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة');
       window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (initErr) {
-      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:center;padding:20px;"><div><h2 style="color:#dc2626;">⚠️ تعذر تحميل التطبيق</h2><p style="color:#64748b;max-width:420px;">' + initErr.message + '</p><button onclick="location.reload()" style="margin-top:12px;padding:10px 24px;background:#176b87;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">إعادة المحاولة</button></div></div>';
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:center;padding:20px;"><div><h2 style="color:#dc2626;">تعذر التحميل</h2><p style="color:#64748b;max-width:420px;">' + initErr.message + '</p><button onclick="location.reload()" style="margin-top:12px;padding:10px 24px;background:#176b87;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">إعادة المحاولة</button></div></div>';
       throw initErr;
     }
 
@@ -180,7 +179,6 @@
     function escapeHtml(v){ return String(v ?? '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
     function pctNumber(v){ const str = String(v || '0').trim(); let n = parseFloat(str.replace(/[^0-9.\-]/g, '')); if (!Number.isFinite(n)) return 0; if (n > 0 && n <= 1 && !str.includes('%')) { n = n * 100; } return n; }
     
-    // 🌟 دوال مساعدة لربط الجهات برقم الـ ID
     function getEntityNames(savedValue) {
       if (!savedValue || savedValue === "—") return "—";
       const parts = savedValue.split('،').map(s => s.trim());
@@ -217,18 +215,16 @@
     }
 
     // إدارة النشاط والخمول
-// ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
-    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+    const INACTIVITY_LIMIT = 30 * 60 * 1000;
+    let lastActivityUpdate = 0; 
 
-    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
+    // دالة بالخروج التلقائي 
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
       if (window.supabaseClient) {
           await window.supabaseClient.auth.signOut();
       }
       currentUser = null;
-      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
       window.location.href = 'index.html?timeout=1';
     }
 
@@ -243,27 +239,22 @@
       const now = Date.now();
       const lastActive = localStorage.getItem('last_activity_time');
 
-      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
       if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
          executeAutoLogout();
          return;
       }
 
-      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
       if (now - lastActivityUpdate > 3000) {
         localStorage.setItem('last_activity_time', now);
         lastActivityUpdate = now;
       }
     }
 
-    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
     ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
         document.addEventListener(event, resetActivityTimer, { passive: true });
     });
 
-    // الفحص الدوري
     setInterval(checkInactivity, 60000); 
-    // -----------------------------------------------------------------
 
     async function fetchUserProfile(email) {
       const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
@@ -274,7 +265,7 @@
     window.onload = async function() {
       const urlParams = new URLSearchParams(window.location.search);
       const initId = urlParams.get('id');
-      if (!initId) { document.getElementById('loadingMsg').innerHTML = '❌ لم يتم تحديد مبادرة لعرضها. يرجى العودة للقائمة.'; return; }
+      if (!initId) { document.getElementById('loadingMsg').innerHTML = 'لم يتم تحديد مبادرة لعرضها. يرجى العودة للقائمة.'; return; }
 
       try {
         const { data: { session }, error } = await window.supabaseClient.auth.getSession();
@@ -362,7 +353,7 @@
       const pct = Math.max(0, Math.min(100, pctNumber(item.completionPercent)));
       
       const canEdit = currentUser && (currentUser.role === 'editor' || currentUser.role === 'admin');
-      const editBtnHtml = canEdit ? `<button type="button" class="btn-review btn-edit-mode" id="btnEdit" onclick="enableEditMode()">تعديل البيانات 📝</button>` : '';
+      const editBtnHtml = canEdit ? `<button type="button" class="btn-review btn-edit-mode" id="btnEdit" onclick="enableEditMode()">تعديل البيانات</button>` : '';
       
       const execNamesDisplay = getEntityNames(item.executingEntity);
       const currentExecIds = getEntityIds(item.executingEntity);
@@ -387,7 +378,7 @@
               
               <input type="hidden" id="f_plan_file" value="${escapeHtml(item.plan3FeetFile)}" />
               <input type="file" id="file3feet" class="hidden" accept=".xlsx, .xls" onchange="upload3FeetPlan(event)" />
-              <button type="button" class="btn-review" style="background:#0284c7;" id="btn3feet" onclick="download3FeetPlan()">3feet plan 📊</button>
+              <button type="button" class="btn-review" style="background:#0284c7;" id="btn3feet" onclick="download3FeetPlan()">3feet plan</button>
 
               ${editBtnHtml}
               <button type="button" class="btn-review btn-save-mode hidden" id="btnSave" onclick="saveData()">حفظ التعديلات 💾</button>
@@ -559,7 +550,7 @@
       document.getElementById(`btnSave`).classList.remove('hidden'); 
       document.getElementById(`btnCancel`).classList.remove('hidden');
       const btn3f = document.getElementById(`btn3feet`);
-      if (btn3f) { btn3f.textContent = "تحديث 3feet plan 📁"; btn3f.style.background = "#0ea5e9"; btn3f.onclick = () => document.getElementById(`file3feet`).click(); }
+      if (btn3f) { btn3f.textContent = "تحديث 3feet plan"; btn3f.style.background = "#0ea5e9"; btn3f.onclick = () => document.getElementById(`file3feet`).click(); }
       setTimeout(() => { card.querySelectorAll('.card-control').forEach(input => { if(!input.classList.contains('act-no')) { input.removeAttribute('disabled'); } autoResize(input); }); }, 10);
     }
 
@@ -619,7 +610,6 @@
     function updateMultiSelectDisplay(dropdownId, dispId) { const checkboxes = document.querySelectorAll(`#${dropdownId} input[type="checkbox"]:checked`); const vals = Array.from(checkboxes).map(cb => cb.value); document.getElementById(dispId).textContent = vals.length > 0 ? vals.join('، ') : 'اختر الجهات...'; }
     document.addEventListener('click', e => { if(!e.target.closest('.multi-select-container')) { document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show')); } });
 
-    /* تفاصيل دوال الجهات المنفذة */
     function openManageEntitiesModal() { renderEntityTable(); document.getElementById('entityModal').classList.add('show'); }
     function closeEntityModal() { document.getElementById('entityModal').classList.remove('show'); }
     
@@ -640,7 +630,7 @@
        const phone = document.getElementById('ent_phone').value.trim();
        const email = document.getElementById('ent_email').value.trim();
        if(!name) { showToast("اسم الجهة مطلوب", "error"); return; }
-       showToast("⏳ جاري الحفظ...");
+       showToast("جاري الحفظ...");
        const payload = { name, contact, phone, email };
        let result;
        
@@ -666,7 +656,7 @@
     async function uploadStepDoc(event, rowIndexId) {
       const file = event.target.files[0]; if (!file) return;
       if (file.size > 5 * 1024 * 1024) { showToast("حجم الملف يتجاوز 5 ميجابايت!", "error"); event.target.value = ''; return; }
-      showToast("⏳ جاري رفع المستند..."); const btn = event.target.previousElementSibling; btn.style.color = "orange";
+      showToast("جاري رفع المستند..."); const btn = event.target.previousElementSibling; btn.style.color = "orange";
       try {
         const fileName = `step_doc_${currentItem.id}_${Date.now()}.${file.name.split('.').pop()}`;
         const { data, error } = await window.supabaseClient.storage.from('step_documents').upload(fileName, file, { upsert: true });
@@ -679,7 +669,7 @@
 
     async function upload3FeetPlan(event) {
       const file = event.target.files[0]; if (!file) return;
-      showToast("⏳ جاري الرفع...", "success"); const btn = document.getElementById(`btn3feet`); btn.textContent = "جاري الرفع... ⏳"; btn.disabled = true;
+      showToast("جاري الرفع...", "success"); const btn = document.getElementById(`btn3feet`); btn.textContent = "جاري الرفع..."; btn.disabled = true;
       try {
         const fileName = `plan_${currentItem.id}_${Date.now()}.${file.name.split('.').pop()}`;
         const { data, error } = await window.supabaseClient.storage.from('3feet_plans').upload(fileName, file, { upsert: true });
@@ -687,13 +677,13 @@
         document.getElementById(`f_plan_file`).value = data.path;
         showToast("✅ تم رفع الملف! اضغط حفظ التعديلات.", "success");
         btn.textContent = "تم الرفع ✅"; btn.style.background = "#16a34a"; btn.disabled = false;
-      } catch (err) { showToast("❌ خطأ: " + err.message, "error"); btn.textContent = "تحديث 3feet plan 📁"; btn.disabled = false; }
+      } catch (err) { showToast("❌ خطأ: " + err.message, "error"); btn.textContent = "تحديث 3feet plan"; btn.disabled = false; }
     }
 
     async function download3FeetPlan() {
        const path = document.getElementById(`f_plan_file`).value;
        if (!path || path === "—") { showToast("لا يوجد ملف مرفق.", "error"); return; }
-       showToast("⏳ جاري التحميل...", "success");
+       showToast("جاري التحميل...", "success");
        try {
            const { data, error } = await window.supabaseClient.storage.from('3feet_plans').download(path);
            if (error) throw error;
@@ -703,7 +693,7 @@
     }
 
     async function saveData() {
-      document.getElementById(`btnSave`).disabled = true; showToast("⏳ جاري الحفظ...");
+      document.getElementById(`btnSave`).disabled = true; showToast("جاري الحفظ...");
       try {
         const goalsArr = Array.from(document.querySelectorAll('.goal-item')).map(i => i.value.trim()).filter(Boolean);
         const indArr = Array.from(document.querySelectorAll('.ind-item')).map(i => i.value.trim()).filter(Boolean);
