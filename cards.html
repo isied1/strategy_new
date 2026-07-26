@@ -82,7 +82,7 @@
     .empty{color:var(--muted);background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;text-align:center;font-size:12px}
     .hidden{display:none!important}
 
-    // نافذة الجهات المنفذة 
+    /* نافذة الجهات المنفذة */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content { background: #fff; border-radius: var(--radius); width: 850px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
@@ -104,7 +104,7 @@
         <div style="display:flex; flex-direction:column;"><label>البريد الإلكتروني</label><input type="text" id="ent_email" placeholder="email@gov.om"></div>
       </div>
       <div style="margin-bottom: 24px; display:flex; gap:10px;">
-        <button class="btn-primary" onclick="saveEntity()">حفظ بيانات الجهة</button>
+        <button class="btn-primary" onclick="saveEntity()">حفظ بيانات الجهة 💾</button>
         <button class="btn-review" style="padding:10px 20px; background:#ef4444;" onclick="resetEntityForm()">تفريغ الحقول</button>
       </div>
       <table style="width: 100%; border: 1px solid var(--line); border-collapse: separate; border-spacing: 0; font-size:12px;">
@@ -171,8 +171,8 @@
           <div class="dropdown">
             <button id="menuBtn" class="btn-menu" onclick="toggleMenu()">⋮</button>
             <div id="dropdownMenu" class="dropdown-content">
-              <button onclick="exportToExcel(); toggleMenu();">تحميل البيانات (Excel)</button>
-              <button onclick="exportToPowerPoint(); toggleMenu();">تحميل البيانات (PowerPoint)</button>
+              <button onclick="exportToExcel(); toggleMenu();">تحميل البيانات (Excel) 📊</button>
+              <button onclick="exportToPowerPoint(); toggleMenu();">تحميل البيانات (PowerPoint) 📽️</button>
             </div>
           </div>
         </div>
@@ -191,7 +191,7 @@
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
     try {
-      if (typeof supabase === 'undefined') throw new Error('فشل تحميل البيانات، تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة');
+      if (typeof supabase === 'undefined') throw new Error('فشل تحميل مكتبة Supabase من الشبكة (CDN). تأكد من اتصالك بالإنترنت أو عطّل أي أداة حجب إعلانات ثم أعد تحميل الصفحة.');
       window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (initErr) {
       document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:center;padding:20px;"><div><h2 style="color:#dc2626;">⚠️ تعذر تحميل التطبيق</h2><p style="color:#64748b;max-width:420px;">' + initErr.message + '</p><button onclick="location.reload()" style="margin-top:12px;padding:10px 24px;background:#176b87;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">إعادة المحاولة</button></div></div>';
@@ -211,7 +211,7 @@
     function normalizeForCompare(v){ return String(v ?? '').replace(/\s+/g,' ').trim().replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/[ًٌٍَُِّْـ]/g,'').toLowerCase(); }
     function pctNumber(v){ const str = String(v || '0').trim(); let n = parseFloat(str.replace(/[^0-9.\-]/g, '')); if (!Number.isFinite(n)) return 0; if (n > 0 && n <= 1 && !str.includes('%')) { n = n * 100; } return n; }
     
-    // ربط الجهات برقم الـ ID
+    // 🌟 دوال مساعدة لربط الجهات برقم الـ ID
     function getEntityNames(savedValue) {
       if (!savedValue || savedValue === "—") return "—";
       const parts = savedValue.split('،').map(s => s.trim());
@@ -248,17 +248,18 @@
     }
 
     // إدارة النشاط والخمول
-    const INACTIVITY_LIMIT = 30 * 60 * 1000;  
-    let lastActivityUpdate = 0; 
+// ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
+    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
 
-    // دالة الخروج التلقائي 
+    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
       if (window.supabaseClient) {
           await window.supabaseClient.auth.signOut();
       }
       currentUser = null;
-        
+      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
       window.location.href = 'index.html?timeout=1';
     }
 
@@ -273,22 +274,27 @@
       const now = Date.now();
       const lastActive = localStorage.getItem('last_activity_time');
 
+      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
       if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
          executeAutoLogout();
          return;
       }
 
+      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
       if (now - lastActivityUpdate > 3000) {
         localStorage.setItem('last_activity_time', now);
         lastActivityUpdate = now;
       }
     }
 
+    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
     ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
         document.addEventListener(event, resetActivityTimer, { passive: true });
     });
 
+    // الفحص الدوري
     setInterval(checkInactivity, 60000); 
+    // -----------------------------------------------------------------
 
     async function fetchUserProfile(email) {
       const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
@@ -338,7 +344,7 @@
     function initAutoResize() { document.querySelectorAll('textarea.card-control').forEach(el => { autoResize(el); el.addEventListener('input', function() { autoResize(this); }); }); }
 
     async function loadAllDataFromServer() {
-      showToast("جاري التحميل ...");
+      showToast("⏳ جاري الاتصال بالخادم ...");
       try {
         const { data: initData, error: initError } = await window.supabaseClient.from('initiatives').select('*').order('initiative_number', { ascending: true });
         if (initError) throw initError;
@@ -375,7 +381,7 @@
         renderEntityOptions(''); populateFollowUpOptions(); renderCards();
         if(document.getElementById('entityModal').classList.contains('show')){ renderEntityTable(); }
         showToast("✅ اكتمل تحميل البيانات.", "success");
-      } catch(err) { showToast('❌ فشل تحميل البيانات: ' + err.message, "error"); }
+      } catch(err) { showToast('❌ فشل جلب البيانات: ' + err.message, "error"); }
     }
 
     function populateFollowUpOptions() {
@@ -389,7 +395,7 @@
     function getFilteredData(){
       const q = normalizeForCompare(els.searchInput.value), fu = normalizeForCompare(els.followUpSelect.value), prog = normalizeForCompare(els.programSelect.value);
       let data = initiatives.filter(item => {
-        const execNames = getEntityNames(item.executingEntity); 
+        const execNames = getEntityNames(item.executingEntity); // 🌟 استخدام الاسم للبحث بدلاً من الـ ID
         const blob = [item.initiativeNo, item.initiativeName, item.description, execNames].join(' ');
         return (!q || normalizeForCompare(blob).includes(q)) && 
                (!selectedEntity || normalizeForCompare(execNames).includes(normalizeForCompare(selectedEntity))) && 
@@ -409,7 +415,7 @@
       
       els.cards.innerHTML = data.map(item => {
         const pct = Math.max(0, Math.min(100, pctNumber(item.completionPercent)));
-        const execNamesDisplay = getEntityNames(item.executingEntity);  
+        const execNamesDisplay = getEntityNames(item.executingEntity); // 🌟 العرض بالاسم
         
         const goalsHtml = item.goals.length ? item.goals.map(g => `<li><div style="display:flex;gap:6px;"><textarea class="card-control text" rows="1" disabled>${escapeHtml(g)}</textarea></div></li>`).join('') : '<div class="empty">لم تسجل أهداف</div>';
         const indsHtml = item.indicators.length ? item.indicators.map(n => `<li><div style="display:flex;gap:6px;"><textarea class="card-control text" rows="1" disabled>${escapeHtml(n)}</textarea></div></li>`).join('') : '<div class="empty">لم تسجل مؤشرات</div>';
@@ -423,7 +429,7 @@
                 <span class="badge">${escapeHtml(item.initiativeNo || 'بدون رقم')}</span>
                 <span class="badge" style="background:${statusColor};">${escapeHtml(item.status || 'لم تبدأ')}</span>
               </div>
-              <button class="btn-review" style="padding: 4px 12px; font-size: 12px;" onclick="window.open('initiative.html?id=${item.id}', '_blank')">استعراض المبادرة</button>
+              <button class="btn-review" style="padding: 4px 12px; font-size: 12px;" onclick="window.open('initiative.html?id=${item.id}', '_blank')">استعراض المبادرة ↗️</button>
             </div>
             <h2><textarea class="card-control text" rows="1" disabled>${escapeHtml(item.initiativeName)}</textarea></h2>
             <div class="meta">
@@ -485,7 +491,7 @@
        const phone = document.getElementById('ent_phone').value.trim();
        const email = document.getElementById('ent_email').value.trim();
        if(!name) { showToast("اسم الجهة مطلوب", "error"); return; }
-       showToast("جاري الحفظ...");
+       showToast("⏳ جاري الحفظ...");
        const payload = { name, contact, phone, email };
        let result;
        
@@ -495,9 +501,10 @@
        if(result.error) { 
            showToast("فشل حفظ البيانات: " + result.error.message, "error"); 
        } else { 
-           showToast("✅ تم حفظ الجهة", "success"); 
+           showToast("✅ تم حفظ الجهة بنجاح", "success"); 
            resetEntityForm(); 
            
+           // التحديث الفوري للجدول بعد الحفظ
            const { data: updatedEntities } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
            if(updatedEntities) {
                entitiesList = updatedEntities; 
@@ -508,17 +515,17 @@
        }
     }
 
-    // دوال الاكسل والبوربوينت  
+    /* دوال الاكسل والبوربوينت (باستخدام أسماء الجهات بدل الأرقام) */
     function exportToExcel() {
       const data = getFilteredData();
-      if (!data.length) { showToast("لا توجد مبادرات.", "error"); return; } showToast("جاري تجهيز Excel...");
+      if (!data.length) { showToast("لا توجد مبادرات.", "error"); return; } showToast("⏳ جاري تجهيز Excel...");
       const ws = XLSX.utils.json_to_sheet(data.map(item => ({ "رقم المبادرة": item.initiativeNo, "اسم المبادرة": item.initiativeName, "الجهة المنفذة": getEntityNames(item.executingEntity), "الجهة المساندة": item.supportingEntity, "برنامج الاستراتيجية": item.programName, "الخطة الزمنية": item.timeline, "نسبة التنفيذ": Math.round(Math.max(0, Math.min(100, pctNumber(item.completionPercent)))) + '%', "الموازنة التقديرية": item.estimatedBudget, "المبلغ المتبقي": item.remainingAmount, "وصف المبادرة": item.description, "أهداف المبادرة": Array.isArray(item.goals) ? item.goals.join(' | ') : item.goals, "المؤشرات الرئيسية": Array.isArray(item.indicators) ? item.indicators.join(' | ') : item.indicators, "خطة العمل": item.actionPlan && item.actionPlan.length ? item.actionPlan.map(p => `${p.no}- ${p.procedure} (الوزن: ${p.weight}% | الحالة: ${p.status})`).join(' \n ') : "" })));
       ws['!dir'] = 'rtl'; const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "المبادرات"); XLSX.writeFile(wb, "المبادرات_الصناعية.xlsx"); showToast("✅ تم التحميل.", "success");
     }
 
     function exportToPowerPoint() {
       const data = getFilteredData();
-      if (!data.length) { showToast("لا توجد بيانات", "error"); return; } showToast("جاري إنشاء البوربوينت ...", "success");
+      if (!data.length) { showToast("لا توجد بيانات", "error"); return; } showToast("⏳ جاري إنشاء البوربوينت ...", "success");
       let pptx = new PptxGenJS();
       pptx.layout = 'LAYOUT_16x9'; 
       const fixRtlText = (text) => text ? text.toString().replace(/\(/g, '&&OPEN&&').replace(/\)/g, '(').replace(/&&OPEN&&/g, ')') : "—";
@@ -567,7 +574,7 @@
         if(tblRows.length === 1) tblRows.push([{ text: "لا توجد خطوات مسجلة", options: { colspan: 4, align: "center", color: "64748B", rtlMode: true, isRtl: true } }]);
         slide.addTable(tblRows, { x: 0.2, y: 1.25, w: 4.7, colW: [0.8, 0.6, 3.0, 0.3], border: { pt: 0.5, color: "E2E8F0" }, fontSize: 9, valign: "middle", rtlMode: true, autoPage: false });
       });
-      pptx.writeFile({ fileName: `المبادرات_${new Date().getTime()}.pptx` }).then(() => showToast("✅تم التحميل", "success")).catch(err => showToast("❌ خطأ: " + err, "error"));
+      pptx.writeFile({ fileName: `المبادرات_${new Date().getTime()}.pptx` }).then(() => showToast("✅ تم التصدير بنجاح", "success")).catch(err => showToast("❌ خطأ: " + err, "error"));
     }
   </script>
 </body>
