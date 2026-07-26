@@ -55,8 +55,6 @@
     }
 
     let currentAuthEmail = "";
-    
-    // الدومين الافتراضي لشركتك (لتفعيل تسجيل الدخول باسم المستخدم فقط)
     const DEFAULT_DOMAIN = '@tejarah.gov.om'; 
 
     let toastTimeout;
@@ -65,7 +63,7 @@
       clearTimeout(toastTimeout); toastTimeout = setTimeout(() => t.classList.remove("show"), 3500);
     }
 
-    // التحقق إذا كان المستخدم مسجلاً مسبقاً، يحوله للداشبورد مباشرة
+    // التحقق إذا كان المستخدم مسجلاً مسبقاً للتحويل المباشر
     window.onload = async function() {
       const { data: { session } } = await window.supabaseClient.auth.getSession();
       if (session) window.location.href = 'dashboard.html';
@@ -80,33 +78,39 @@
       
       currentAuthEmail = identifier.includes('@') ? identifier : identifier + DEFAULT_DOMAIN;
 
-      // 🌟 التعديل الأهم: التحقق من وجود الإيميل في جدول الصلاحيات قبل طلب إرسال الرمز
-      const { data: profileCheck, error: profileError } = await window.supabaseClient
-         .from('profiles')
-         .select('email')
-         .eq('email', currentAuthEmail)
-         .single();
+      try {
+        // 🌟 1. الاستعلام من قاعدة البيانات عبر الدالة (RPC) لتخطي حظر (RLS)
+        const { data: isAllowed, error: rpcError } = await window.supabaseClient.rpc('check_user_exists', { lookup_email: currentAuthEmail });
 
-      if (!profileCheck) {
-         // إذا لم يكن الإيميل مسجلاً، نوقف العملية ولا نرسل الرمز
-         btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
-         showToast("عذراً، هذا الحساب غير مصرح له بالدخول.", "error");
-         return;
-      }
+        if (rpcError) {
+           throw new Error("فشل التحقق. تأكد من إضافة الاستعلام (check_user_exists) في سوبابيس.");
+        }
 
-      // إذا كان مسجلاً، نطلب من Supabase إرسال الرمز
-      const { data, error } = await window.supabaseClient.auth.signInWithOtp({
-        email: currentAuthEmail,
-        // تم تغييرها إلى false لضمان عدم إنشاء حسابات غير مصرح بها في نظام الـ Auth الخاص بسوبابيس
-        options: { shouldCreateUser: false } 
-      });
+        // إذا لم يكن الإيميل مضافاً بقاعدة البيانات، نمنع إرسال الكود
+        if (!isAllowed) {
+           btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
+           showToast("عذراً، هذا الحساب غير مصرح له بالدخول.", "error");
+           return;
+        }
 
-      btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
+        // 🌟 2. بما أن الإيميل مصرح به، نقوم بطلب إرسال الرمز مع السماح بإنشائه بنظام المصادقة
+        const { data, error } = await window.supabaseClient.auth.signInWithOtp({
+          email: currentAuthEmail,
+          options: { shouldCreateUser: true } 
+        });
 
-      if (error) { showToast("حدث خطأ في النظام: " + error.message, "error"); } 
-      else {
-        document.getElementById('step1').classList.add('hidden'); document.getElementById('step2').classList.remove('hidden');
-        showToast("تم إرسال الرمز بنجاح", "success");
+        btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
+
+        if (error) { 
+          showToast("حدث خطأ في النظام: " + error.message, "error"); 
+        } else {
+          document.getElementById('step1').classList.add('hidden'); 
+          document.getElementById('step2').classList.remove('hidden');
+          showToast("تم إرسال الرمز بنجاح", "success");
+        }
+      } catch (err) {
+        btn.disabled = false; btn.textContent = "إرسال رمز التحقق";
+        showToast(err.message, "error");
       }
     }
 
@@ -124,7 +128,6 @@
       if (error) { 
         showToast("الرمز خاطئ.", "error"); 
       } else {
-        // بما أننا تحققنا مسبقاً، نسمح له بالدخول فوراً
         localStorage.setItem('last_activity_time', Date.now());
         window.location.href = 'dashboard.html'; 
       }
