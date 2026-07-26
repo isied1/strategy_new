@@ -78,9 +78,6 @@
     .modal-content { background: #fff; border-radius: var(--radius); width: 750px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
     .loading-overlay { text-align: center; padding: 60px; font-size: 16px; color: var(--muted); font-weight: bold; }
     .hidden { display: none !important; }
-    
-    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-
   </style>
 </head>
 <body>
@@ -105,6 +102,16 @@
 
     <div id="dashboardContent" class="hidden" style="display: flex; flex-direction: column; gap: 24px;">
       
+      <section class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--soft); padding-bottom:12px; margin-bottom:16px;">
+          <h3 class="panel-title">الموقف العام لتقدم المبادرات</h3>
+          <div style="display:flex; gap:8px;">
+            <button onclick="goToCards()" class="btn-primary" style="display:flex; align-items:center;">استعراض المبادرات 📄</button>
+            <button onclick="fetchCloudData()" class="btn-menu" title="تحديث البيانات">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+          </div>
+        </div>
 
         <div class="seg-container">
           <div class="seg-legends">
@@ -186,8 +193,6 @@
     </div>
   </div>
 
-
-
   <script>
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
@@ -201,13 +206,11 @@
 
     let initiatives = [];
     let currentUser = null;
-    let entitiesList = []; // تم الإضافة للاحتفاظ بقائمة الجهات
+    let entitiesList = []; 
     window.currentTopInits = []; 
     window.currentDelayedInits = []; 
-    let chatHistoryLog = [];
 
-    // ----- 🛡️ نظام إدارة الجلسة والنشاط (الخروج التلقائي بعد 30 دقيقة) -----
-// ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
+    // ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
     const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
     let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
 
@@ -264,7 +267,7 @@
       const parts = savedValue.split('،').map(s => s.trim());
       const names = parts.map(part => {
         let ent = entitiesList.find(e => String(e.id) === String(part));
-        if (!ent) ent = entitiesList.find(e => e.name === part); // توافق مع البيانات القديمة
+        if (!ent) ent = entitiesList.find(e => e.name === part); 
         return ent ? ent.name : part; 
       }).filter(Boolean);
       return names.length > 0 ? names.join('، ') : "—";
@@ -281,7 +284,6 @@
     async function fetchUserProfile(email) {
       const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
       
-      // 🌟 التحديث الأمني: الطرد الفوري لأي شخص يتسلل بدون أن تضيفه الإدارة
       if (error || !data) {
          alert("عذراً، حسابك غير مسجل في قائمة الصلاحيات. سيتم إنهاء الجلسة.");
          await window.supabaseClient.auth.signOut();
@@ -302,9 +304,9 @@
         const { data: { session }, error } = await window.supabaseClient.auth.getSession();
         if (session && session.user) {
           currentUser = await fetchUserProfile(session.user.email);
-          resetActivityTimer(); // بدء العداد عند التحميل
+          resetActivityTimer(); 
           initAppAfterLogin();
-        } else { window.location.href = 'index.html'; } // طرد لصفحة الدخول إذا لم تكن هناك جلسة
+        } else { window.location.href = 'index.html'; } 
       } catch(e) { window.location.href = 'index.html'; }
     };
 
@@ -313,7 +315,7 @@
       localStorage.removeItem('last_activity_time');
       currentUser = null; 
       alert(msg);
-      window.location.href = 'index.html'; // توجيه لصفحة الدخول المستقلة
+      window.location.href = 'index.html'; 
     }
     
     function toggleUserDropdown() { if (currentUser && currentUser.role === 'admin') document.getElementById("userDropdownMenu").classList.toggle("show"); }
@@ -342,7 +344,6 @@
       document.getElementById('loading').classList.remove('hidden'); 
       document.getElementById('dashboardContent').classList.add('hidden');
       
-      // جلب المبادرات والجهات المنفذة معاً
       const [initRes, entRes] = await Promise.all([
         window.supabaseClient.from('initiatives').select('*').order('created_at', { ascending: true }),
         window.supabaseClient.from('entities').select('*').order('id', { ascending: true })
@@ -351,14 +352,13 @@
       if (initRes.error) { 
         showToast("فشل جلب البيانات: " + initRes.error.message, "error"); 
       } else { 
-        entitiesList = entRes.data || []; // حفظ قائمة الجهات في المتغير العام
+        entitiesList = entRes.data || []; 
 
         document.getElementById('loading').classList.add('hidden'); 
         document.getElementById('dashboardContent').classList.remove('hidden'); 
         
         let rawInitiatives = initRes.data || [];
 
-        // 🌟 فلتر الصلاحيات: حجب المبادرات غير المصرح بها
         if (currentUser.role !== 'admin' && currentUser.allowed_initiatives && currentUser.allowed_initiatives.trim() !== '') {
            const allowedIds = currentUser.allowed_initiatives.split(',').map(s => s.trim());
            rawInitiatives = rawInitiatives.filter(item => allowedIds.includes(String(item.initiative_number).trim()));
@@ -385,7 +385,7 @@
         const progName = (item.program_name || "").trim();
         if (programs[progName] !== undefined) { programs[progName].count++; programs[progName].totalPct += pct; }
         
-        const entityField = getEntityNames(item.executing_entity || "").trim(); // استخدام الدالة الجديدة لجلب الاسم
+        const entityField = getEntityNames(item.executing_entity || "").trim(); 
         if (entityField && entityField !== "—") { const parts = entityField.split(/[،,]/).map(p => p.trim()).filter(Boolean); parts.forEach(ent => { if (!entities[ent]) entities[ent] = { count: 0, totalPct: 0 }; entities[ent].count++; entities[ent].totalPct += pct; }); }
         if (item.is_key_initiative && String(item.is_key_initiative).trim() === "نعم") { window.currentTopInits.push(item); }
       });
@@ -429,19 +429,6 @@
       else { window.currentDelayedInits.sort((a,b) => b.delayedDays - a.delayedDays).forEach(item => { list.innerHTML += `<div class="top-init-item" style="cursor:default; border-right-color:#ef4444;"><h4 style="color:#b91c1c;">${escapeHtml(item.initiative_name)}</h4><div class="top-init-flex"><span style="color:#dc2626; font-weight:bold;">تأخير: ${item.delayedDays} يوم</span><span class="top-init-pct" style="color:#16a34a; border-color:#bbf7d0;">إنجاز: ${Math.round(pctNumber(item.completion_percentage))}%</span></div></div>`; }); }
       document.getElementById('delayedModal').classList.add('show');
     }
-
-
-    function downloadModalAsWord(elementId, baseFilename) {
-      const content = document.getElementById(elementId).innerHTML;
-      const htmlString = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>تقرير الاستراتيجية الصناعية</title><style>body { font-family: 'Tahoma', 'Arial', sans-serif; direction: rtl; text-align: right; line-height: 1.6; } h3 { color: #0b4f6c; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; margin-top: 20px; font-size: 16px; }</style></head><body>${content}</body></html>`;
-      const blob = new Blob(['\ufeff' + htmlString], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = baseFilename + '_' + new Date().toISOString().slice(0,10) + '.doc';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    }
-
-    function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
-
-
   </script>
 </body>
 </html>
