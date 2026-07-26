@@ -100,26 +100,12 @@
     .multi-select-item:hover { background: var(--soft); color: var(--brand2); font-weight: bold; }
     .multi-select-item input[type="checkbox"] { width: 16px; height: 16px; margin:0; }
 
-    /* نوافذ المستخدم (إدارة الجهات والمساعد) */
+    /* نوافذ المستخدم (إدارة الجهات) */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: all 0.25s ease; }
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content { background: #fff; border-radius: var(--radius); width: 850px; max-width: 95vw; max-height: 92vh; overflow-y: auto; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
     .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
     .form-grid label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 6px; color: var(--brand2); }
-    
-    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-
-    .chat-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; border: none; }
-    .chat-window { position: fixed; bottom: 100px; left: 30px; width: 360px; max-width: 90vw; height: 500px; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s ease; border: 1px solid var(--line); overflow: hidden; }
-    .chat-window.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .chat-header { background: var(--brand2); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-    .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
-    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
-    .chat-msg.user { align-self: flex-start; background: var(--brand); color: #fff; border-bottom-right-radius: 2px; }
-    .chat-msg.ai { align-self: flex-end; background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 2px; }
-    .chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid var(--line); gap: 8px; }
-    .chat-input-area input { flex: 1; border: 1px solid var(--line); border-radius: 20px; padding: 10px 16px; outline: none; font-family: inherit; }
-    .chat-input-area button { background: var(--brand); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -174,24 +160,6 @@
     <div style="text-align:center; padding:50px; color:var(--muted);" id="loadingMsg">⏳ جاري تحميل تفاصيل المبادرة...</div>
   </main>
 
-  <div class="modal-overlay" id="aiModal">
-    <div class="modal-content" style="max-width: 850px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--soft); padding-bottom:10px; margin-bottom:15px;">
-        <h2 style="margin:0; color:#4f46e5; font-size:19px; display:flex; align-items:center; gap:8px;"><span>🤖</span> المستشار الاستراتيجي</h2>
-      </div>
-      <div id="aiLoading" style="text-align:center; padding:50px 20px; color:var(--brand2); font-weight:bold; display:none;">
-        <div style="font-size:45px; margin-bottom:15px; animation: pulse 1.5s infinite;">🧠</div>
-        جاري تحليل المبادرة... <br><span style="font-size:12px; color:var(--muted); font-weight:normal;">(يرجى الانتظار بضع دقائق)</span>
-      </div>
-      <div id="aiResponseContent" style="display:none; line-height:1.8; color:var(--ink); font-size:14.5px; padding:10px;"></div>
-      <div style="text-align:left; margin-top:24px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;">
-         <button id="btnDownloadCardWord" class="btn-review" style="background:#16a34a; padding:8px 24px; display:none;" onclick="downloadModalAsWord('aiResponseContent', 'تقرير_المبادرة')">تحميل التقرير (Word) 📝</button>
-         <button class="btn-review" style="background:var(--muted); padding:8px 24px" onclick="document.getElementById('aiModal').classList.remove('show')">إغلاق التقرير</button>
-      </div>
-    </div>
-  </div>
-
-
   <script>
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
     const SUPABASE_ANON_KEY = 'sb_publishable_3lCPQVLuTY2ZI5OyDuc1Aw_ZnF1RgAI';
@@ -206,7 +174,6 @@
     let currentItem = null;
     let currentUser = null;
     let entitiesList = [];
-    let chatHistoryLog = [];
     const PROGRAM_OPTIONS = ['ابتكار صناعات جديدة وذات تكنولوجيا متقدمة','ريادة الاعمال والابتكار','التطوير والتحديث','الحوكمة وإدارة التنمية الصناعية'];
     const STATUS_OPTIONS = ['لم تبدأ', 'قيد التنفيذ', 'مكتملة'];
 
@@ -417,7 +384,6 @@
             </div>
             <input type="hidden" id="f_no" value="${escapeHtml(item.initiativeNo)}" />
             <div style="display:flex; gap:8px;">
-              <button type="button" class="btn-review" style="background:#4f46e5;" onclick="askSmartAdvisor()">🤖 المستشار الذكي</button>
               
               <input type="hidden" id="f_plan_file" value="${escapeHtml(item.plan3FeetFile)}" />
               <input type="file" id="file3feet" class="hidden" accept=".xlsx, .xls" onchange="upload3FeetPlan(event)" />
@@ -806,38 +772,6 @@
         if (error) throw error;
         showToast("✅ تم الحفظ بنجاح!", "success"); setTimeout(() => location.reload(), 1000);
       } catch (e) { showToast("❌ فشل: " + e.message, "error"); document.getElementById(`btnSave`).disabled = false; }
-    }
-
-    async function askSmartAdvisor() {
-      document.getElementById('aiModal').classList.add('show'); document.getElementById('aiLoading').style.display = 'block'; document.getElementById('aiResponseContent').style.display = 'none';
-      const payload = { ...currentItem, executingEntity: getEntityNames(currentItem.executingEntity) };
-      const { data: res, error } = await window.supabaseClient.functions.invoke('get-card-ai-advice', { body: payload });
-      document.getElementById('aiLoading').style.display = 'none'; document.getElementById('aiResponseContent').style.display = 'block';
-      if(!error && res.success) { document.getElementById('aiResponseContent').innerHTML = res.advice; document.getElementById('btnDownloadCardWord').style.display = 'inline-block'; } 
-      else { document.getElementById('aiResponseContent').innerHTML = `<div style="color:red">❌ فشل: ${error?.message}</div>`; }
-    }
-
-    function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
-    async function sendChatMessage() {
-      const input = document.getElementById('chatInput'); const msg = input.value.trim(); if(!msg) return;
-      const chatBody = document.getElementById('chatBody'); chatBody.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
-      chatHistoryLog.push({ role: 'user', parts: [{ text: msg }] }); input.value = '';
-      const loadingId = 'loading-' + Date.now(); chatBody.innerHTML += `<div class="chat-msg ai" id="${loadingId}">⏳...</div>`; chatBody.scrollTop = chatBody.scrollHeight;
-      
-      const contextData = `المبادرة: ${currentItem.initiativeName}، النسبة: ${currentItem.completionPercent}%، المنفذ: ${getEntityNames(currentItem.executingEntity)}، التحديات: ${currentItem.challenges}`;
-      const { data: res, error } = await window.supabaseClient.functions.invoke('chat-bot', { body: { context: contextData, history: chatHistoryLog.slice(-5) } });
-      
-      document.getElementById(loadingId).remove();
-      if(!error && res.success) { chatBody.innerHTML += `<div class="chat-msg ai">${res.reply.replace(/\n/g, '<br>')}</div>`; chatHistoryLog.push({ role: 'model', parts: [{ text: res.reply }] }); }
-      else { chatBody.innerHTML += `<div class="chat-msg ai" style="color:red">❌ فشل الاتصال.</div>`; chatHistoryLog.pop(); }
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-    
-    function downloadModalAsWord(elementId, baseFilename) {
-      const content = document.getElementById(elementId).innerHTML;
-      const htmlString = `<html dir="rtl"><head><meta charset="utf-8"><style>body{font-family:Tahoma; direction:rtl; text-align:right;} h3{color:#0b4f6c;}</style></head><body>${content}</body></html>`;
-      const blob = new Blob(['\ufeff' + htmlString], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = baseFilename + '.doc'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     }
   </script>
 </body>
