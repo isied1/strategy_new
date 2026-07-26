@@ -81,20 +81,6 @@
     
     @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
 
-    /* 💬 تصميم واجهة الدردشة العائمة */
-    .chat-fab { position: fixed; bottom: 30px; left: 30px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 9999; transition: transform 0.2s; border: none; }
-    .chat-fab:hover { transform: scale(1.1); }
-    .chat-window { position: fixed; bottom: 100px; left: 30px; width: 360px; max-width: 90vw; height: 500px; max-height: 80vh; background: #fff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; transform: translateY(20px); opacity: 0; pointer-events: none; transition: all 0.3s ease; border: 1px solid var(--line); overflow: hidden; }
-    .chat-window.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .chat-header { background: var(--brand2); color: #fff; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14.5px; }
-    .chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); scroll-behavior: smooth; }
-    .chat-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; word-wrap: break-word; }
-    .chat-msg.user { align-self: flex-start; background: var(--brand); color: #fff; border-bottom-right-radius: 2px; }
-    .chat-msg.ai { align-self: flex-end; background: #fff; border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 2px; }
-    .chat-input-area { display: flex; padding: 12px; background: #fff; border-top: 1px solid var(--line); gap: 8px; align-items: center; }
-    .chat-input-area input { flex: 1; border: 1px solid var(--line); border-radius: 20px; padding: 10px 16px; outline: none; font-family: inherit; font-size: 13px; background: #f8fafc; }
-    .chat-input-area input:focus { border-color: var(--brand); }
-    .chat-input-area button { background: var(--brand); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
   </style>
 </head>
 <body>
@@ -119,19 +105,6 @@
 
     <div id="dashboardContent" class="hidden" style="display: flex; flex-direction: column; gap: 24px;">
       
-      <section class="panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--soft); padding-bottom:12px; margin-bottom:16px;">
-          <h3 class="panel-title">الموقف العام لتقدم المبادرات</h3>
-          <div style="display:flex; gap:8px;">
-            <button onclick="analyzeDashboardAI()" class="btn-primary" style="display:flex; align-items:center; background:#4f46e5; border-color:#4338ca; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);">
-              🤖 استشراف وتحليل الموقف العام (AI)
-            </button>
-            <button onclick="goToCards()" class="btn-primary" style="display:flex; align-items:center;">استعراض المبادرات 📄</button>
-            <button onclick="fetchCloudData()" class="btn-menu" title="تحديث البيانات">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            </button>
-          </div>
-        </div>
 
         <div class="seg-container">
           <div class="seg-legends">
@@ -213,43 +186,7 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="aiDashboardModal">
-    <div class="modal-content" style="max-width: 900px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--soft); padding-bottom:10px; margin-bottom:15px;">
-        <h2 style="margin:0; color:#4f46e5; font-size:19px; display:flex; align-items:center; gap:8px;">
-          <span>🤖</span> التقرير الاستشرافي للموقف التنفيذي (AI)
-        </h2>
-      </div>
-      <div id="aiDashLoading" style="text-align:center; padding:50px 20px; color:var(--brand2); font-weight:bold; display:none;">
-        <div style="font-size:45px; margin-bottom:15px; animation: pulse 1.5s infinite;">🧠</div>
-        جاري تحليل البيانات واعداد التقرير ... <br>
-        <span style="font-size:12px; color:var(--muted); font-weight:normal;">(قد تستغرق العملية بضع دقائق، يرجى الانتظار)</span>
-      </div>
-      <div id="aiDashResponseContent" style="display:none; line-height:1.8; color:var(--ink); font-size:14.5px; padding:10px; background:#f8fafc; border-radius:12px; border:1px solid var(--line);">
-      </div>
-      <div style="text-align:left; margin-top:24px; padding-top:15px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;">
-         <button id="btnDownloadDashWord" class="btn-primary" style="background:#16a34a; padding:8px 24px; display:none;" onclick="downloadModalAsWord('aiDashResponseContent', 'التقرير_الاستشرافي_الشامل')">تحميل التقرير (Word) 📝</button>
-         <button class="btn-primary" style="background:#ef4444; padding:8px 24px" onclick="document.getElementById('aiDashboardModal').classList.remove('show')">إغلاق التقرير</button>
-      </div>
-    </div>
-  </div>
 
-  <button class="chat-fab" onclick="toggleChat()" title="تحدث مع المستشار الذكي">🤖</button>
-  <div class="chat-window" id="chatWindow">
-    <div class="chat-header">
-      <div style="display:flex; align-items:center; gap:8px;"><span>🤖</span> مساعد الاستراتيجية 2040</div>
-      <button style="background:transparent; border:none; color:#fff; cursor:pointer; font-size:16px;" onclick="toggleChat()">✖</button>
-    </div>
-    <div class="chat-body" id="chatBody">
-      <div class="chat-msg ai">أهلاً بك! 👋 أنا المساعد الذكي للاستراتيجية الصناعية 2040. <br>يمكنك سؤالي عن نسب الإنجاز، تفاصيل المبادرات، أو التحديات الحالية. كيف أساعدك؟</div>
-    </div>
-    <div class="chat-input-area">
-      <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="if(event.key === 'Enter') sendChatMessage()" />
-      <button id="chatSendBtn" onclick="sendChatMessage()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg); margin-right:4px;"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-      </button>
-    </div>
-  </div>
 
   <script>
     const SUPABASE_URL = 'https://ictyhtprnmfewjrlrctg.supabase.co'; 
@@ -493,42 +430,6 @@
       document.getElementById('delayedModal').classList.add('show');
     }
 
-    async function analyzeDashboardAI() {
-      if (initiatives.length === 0) { showToast("لا توجد بيانات لتحليلها.", "error"); return; }
-      const modal = document.getElementById('aiDashboardModal'); const loading = document.getElementById('aiDashLoading'); const content = document.getElementById('aiDashResponseContent'); const btnDownloadWord = document.getElementById('btnDownloadDashWord');
-      modal.classList.add('show'); loading.style.display = 'block'; content.style.display = 'none'; content.innerHTML = ''; btnDownloadWord.style.display = 'none';
-      let comp = 0, prog = 0, not = 0, dlyCount = 0; let sumPct = 0; let delayedNamesArr = []; let initsDetailsArr = []; const today = new Date(); today.setHours(0,0,0,0);
-      initiatives.forEach(item => {
-        const status = (item.status || "").trim(); const pct = pctNumber(item.completion_percentage); sumPct += pct;
-        if (status === "مكتملة" || pct === 100) comp++; else if (status === "قيد التنفيذ") prog++; else not++;
-        if (status !== "مكتملة" && item.end_date) { const end = new Date(item.end_date); if (!isNaN(end) && end < today) { dlyCount++; delayedNamesArr.push(item.initiative_name); } }
-initsDetailsArr.push(
-          `📌 [رقم المبادرة: ${item.initiative_number || "—"}]\n` +
-          `- اسم المبادرة: ${item.initiative_name || "—"}\n` +
-          `- وصف المبادرة: ${item.description || "—"}\n` +
-          `- أهداف المبادرة: ${item.goals || "—"}\n` +
-          `- المؤشرات الرئيسية: ${item.kpis || "—"}\n` +
-          `- خطة العمل: ${item.action_plan || "—"}\n` +
-          `- نسبة التنفيذ: ${Math.round(pct)}%\n` +
-          `- الموازنة التقديرية: ${item.estimated_budget || "—"}\n` +
-          `- الجهة المنفذة: ${getEntityNames(item.executing_entity) || "—"}\n` +
-          `- الخطة الزمنية: ${item.timeline || "—"}\n` +
-          `- اسم البرنامج: ${item.program_name || "—"}\n` +
-          `- تاريخ البدء: ${item.start_date || "—"} | تاريخ الانتهاء: ${item.end_date || "—"}\n` +
-          `- الحالة: ${item.status || "—"}\n` +
-          `- الموقف التنفيذي: ${item.executive_status || "—"}\n` +
-          `- التحديات: ${item.challenges || "—"}\n` +
-          `- الملاحظات: ${item.notes || "—"}\n` +
-          `- آخر تحديث: ${item.latest_update || "—"}\n` +
-          `--------------------------------------------------`
-        );
-      });
-      const payload = { total: initiatives.length, completed: comp, inProgress: prog, notStarted: not, delayed: dlyCount, avgCompletion: Math.round(sumPct / initiatives.length), delayedNames: delayedNamesArr.slice(0, 5).join("، "), initiativesDetails: initsDetailsArr.join("\n") };
-      const { data: res, error } = await window.supabaseClient.functions.invoke('analyze-dashboard', { body: payload });
-      loading.style.display = 'none'; content.style.display = 'block';
-      if (!error && res.success) { content.innerHTML = `<div style="font-size: 11.5px; color: var(--muted); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed var(--line);"> تم اعداد هذا التقرير بواسطة الذكاء الاصطناعي ** <b style="color: var(--brand); font-family: monospace;"></b></div>` + res.advice; btnDownloadWord.style.display = 'inline-block'; } 
-      else { content.innerHTML = `<div style="color:#ef4444; font-weight:bold; text-align:center; padding:20px;">❌ خطأ في إصدار التقرير</div>`; }
-    }
 
     function downloadModalAsWord(elementId, baseFilename) {
       const content = document.getElementById(elementId).innerHTML;
@@ -540,55 +441,7 @@ initsDetailsArr.push(
 
     function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
 
-async function sendChatMessage() {
-      const input = document.getElementById('chatInput'); const msg = input.value.trim();
-      if(!msg || initiatives.length === 0) { if(initiatives.length === 0) showToast("الرجاء انتظار تحميل البيانات أولاً", "error"); return; }
 
-      const chatBody = document.getElementById('chatBody'); const sendBtn = document.getElementById('chatSendBtn');
-      chatBody.innerHTML += `<div class="chat-msg user">${escapeHtml(msg)}</div>`;
-      chatHistoryLog.push({ role: 'user', parts: [{ text: msg }] });
-      input.value = ''; sendBtn.disabled = true; input.disabled = true;
-      
-      const loadingId = 'loading-' + Date.now();
-      chatBody.innerHTML += `<div class="chat-msg ai" id="${loadingId}" style="color:var(--muted); font-style:italic;">⏳ جاري الرد ...</div>`;
-      chatBody.scrollTop = chatBody.scrollHeight;
-
-      // 🌟 التحديث: تضمين كافة الحقول المطلوبة لتغذية الذكاء الاصطناعي مع معالجة أسماء الجهات
-      let contextData = initiatives.map(item => `📌 [رقم المبادرة: ${item.initiative_number || "—"}]
-- اسم المبادرة: ${item.initiative_name || "—"}
-- وصف المبادرة: ${item.description || "—"}
-- أهداف المبادرة: ${item.goals || "—"}
-- نسبة التنفيذ: ${Math.round(pctNumber(item.completion_percentage))}%
-- الجهة المنفذة: ${getEntityNames(item.executing_entity) || "—"}
-- الخطة الزمنية: ${item.timeline || "—"}
-- اسم البرنامج: ${item.program_name || "—"}
-- تاريخ البدء: ${item.start_date || "—"} | تاريخ الانتهاء: ${item.end_date || "—"}
-- الحالة: ${item.status || "—"}
---------------------------------------------------`).join('\n');
-
-      const payload = { context: contextData, history: chatHistoryLog.slice(-10) };
-
-      const { data: res, error } = await window.supabaseClient.functions.invoke('chat-bot', { body: payload });
-
-      document.getElementById(loadingId).remove();
-      sendBtn.disabled = false; input.disabled = false; input.focus();
-      
-if(!error && res.success) {
-         // 🧹 فلتر تنظيف وتجميل النص: يحول الماركداون والنجوم إلى تصميم HTML أنيق
-         let cleanReply = res.reply
-            .replace(/\*\*(.*?)\*\*/g, '<br><b style="color: var(--brand2); font-size: 14px;">$1</b>') // تلوين وتغليظ العناوين
-            .replace(/\n\*\s/g, '<br><span style="color: var(--brand); margin-left: 5px;">■</span> ') // تحويل النجمة لنقطة قائمة زرقاء
-            .replace(/\*\s/g, '<br><span style="color: var(--brand); margin-left: 5px;">■</span> ') // تحويل النجمة لنقطة قائمة زرقاء (حالة أخرى)
-            .replace(/\n/g, '<br>'); // معالجة الأسطر الجديدة
-
-         chatBody.innerHTML += `<div class="chat-msg ai">${cleanReply}</div>`;
-         chatHistoryLog.push({ role: 'model', parts: [{ text: res.reply }] });
-      } else {
-         chatBody.innerHTML += `<div class="chat-msg ai" style="color:#ef4444; font-weight:bold;">❌ انقطع الاتصال بالمستشار: ${error?.message || res?.error}</div>`;
-         chatHistoryLog.pop();
-      }
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
   </script>
 </body>
 </html>
