@@ -425,7 +425,7 @@
 
     function openDelayedModal() {
       const list = document.getElementById('delayedList'); list.innerHTML = '';
-      if(window.currentDelayedInits.length === 0) { list.innerHTML = '<div style="color:var(--muted); text-align:center; padding:30px; font-weight:bold;">ممتاز! لا توجد مبادرات متأخرة زمنياً في النظام.</div>'; } 
+      if(window.currentDelayedInits.length === 0) { list.innerHTML = '<div style="color:var(--muted); text-align:center; padding:30px; font-weight:bold;">لا توجد مبادرات متأخرة زمنياً.</div>'; } 
       else { window.currentDelayedInits.sort((a,b) => b.delayedDays - a.delayedDays).forEach(item => { list.innerHTML += `<div class="top-init-item" style="cursor:default; border-right-color:#ef4444;"><h4 style="color:#b91c1c;">${escapeHtml(item.initiative_name)}</h4><div class="top-init-flex"><span style="color:#dc2626; font-weight:bold;">تأخير: ${item.delayedDays} يوم</span><span class="top-init-pct" style="color:#16a34a; border-color:#bbf7d0;">إنجاز: ${Math.round(pctNumber(item.completion_percentage))}%</span></div></div>`; }); }
       document.getElementById('delayedModal').classList.add('show');
     }
