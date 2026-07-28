@@ -246,8 +246,8 @@
       if(type === "success" || type === "error") { toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3500); }
     }
 
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
-    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+    const INACTIVITY_LIMIT = 30 * 60 * 1000;
+    let lastActivityUpdate = 0; 
 
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
@@ -493,7 +493,7 @@
            showToast("✅ تم حفظ الجهة بنجاح", "success"); 
            resetEntityForm(); 
            
-           // التحديث الفوري للجدول بعد الحفظ
+    
            const { data: updatedEntities } = await window.supabaseClient.from('entities').select('*').order('id', { ascending: true });
            if(updatedEntities) {
                entitiesList = updatedEntities; 
