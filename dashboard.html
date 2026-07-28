@@ -210,18 +210,15 @@
     window.currentTopInits = []; 
     window.currentDelayedInits = []; 
 
-    // ----- 🛡️ نظام إدارة الجلسة والنشاط (مُحسّن) -----
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 دقيقة بالملي ثانية
-    let lastActivityUpdate = 0; // لتقليل الضغط على المتصفح
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; 
+    let lastActivityUpdate = 0; 
 
-    // دالة خاصة بالخروج التلقائي (بدون استخدام alert الذي يُجمد المتصفح)
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
       if (window.supabaseClient) {
           await window.supabaseClient.auth.signOut();
       }
       currentUser = null;
-      // توجيه المستخدم لصفحة الدخول (يمكنك التقاط هذا المتغير في صفحة الدخول لعرض رسالة)
       window.location.href = 'index.html?timeout=1';
     }
 
@@ -236,32 +233,26 @@
       const now = Date.now();
       const lastActive = localStorage.getItem('last_activity_time');
 
-      // 1. فحص استباقي: إذا مر 30 دقيقة، امنع تحديث الوقت وقم بتسجيل الخروج فوراً
       if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
          executeAutoLogout();
          return;
       }
 
-      // 2. تحديث العداد كل 3 ثوانٍ كحد أقصى (لمنع انهيار أداء المتصفح بسبب حركة الماوس)
       if (now - lastActivityUpdate > 3000) {
         localStorage.setItem('last_activity_time', now);
         lastActivityUpdate = now;
       }
     }
 
-    // إضافة المستمعين (تمت إضافة visibilitychange لالتقاط عودة المستخدم للنافذة)
     ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'visibilitychange'].forEach(event => {
         document.addEventListener(event, resetActivityTimer, { passive: true });
     });
 
-    // الفحص الدوري
     setInterval(checkInactivity, 60000); 
-    // -----------------------------------------------------------------
 
     function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s])); }
     function pctNumber(v) { const str = String(v || '0').trim(); let n = parseFloat(str.replace(/[^0-9.\-]/g, '')); if (!Number.isFinite(n)) return 0; if (n > 0 && n <= 1 && !str.includes('%')) { n = n * 100; } return n; }
     
-    // دالة تحويل الـ ID لأسماء للعرض
     function getEntityNames(savedValue) {
       if (!savedValue || savedValue === "—") return "—";
       const parts = savedValue.split('،').map(s => s.trim());
@@ -280,7 +271,6 @@
       if(type === "success" || type === "error") { toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3500); }
     }
 
-    // جلب الصلاحيات من جدول profiles
     async function fetchUserProfile(email) {
       const { data, error } = await window.supabaseClient.from('profiles').select('email, role, name, allowed_initiatives').eq('email', email).single();
       
