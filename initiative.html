@@ -214,11 +214,9 @@
       if(type === "success" || type === "error") { toastTimeout = setTimeout(() => { toast.classList.remove("show"); }, 3500); }
     }
 
-    // إدارة النشاط والخمول
     const INACTIVITY_LIMIT = 30 * 60 * 1000;
     let lastActivityUpdate = 0; 
 
-    // دالة بالخروج التلقائي 
     async function executeAutoLogout() {
       localStorage.removeItem('last_activity_time');
       if (window.supabaseClient) {
